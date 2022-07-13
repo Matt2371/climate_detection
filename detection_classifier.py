@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
-from sklearn.metrics import f1_score
 from tqdm import tqdm
 
 
@@ -106,25 +105,26 @@ def logistic_regrssion(X, y):
     return LG_predictions, dummy_predictions, y_test, LG_coeff
 
 
-# # calculates true positive, true negative rate, sample size of testing set, number of positive/negative examples in
-# # test set
-# def tptns(predictions, y_test):
-#     y_test = y_test.values
-#     TP = 0
-#     TN = 0
-#     for i in range(len(predictions)):
-#         if y_test[i] == predictions[i] == 1:
-#             TP += 1
-#         elif y_test[i] == predictions[i] == 0:
-#             TN += 1
-#     TP_rate = TP / len(y_test[np.where(y_test == 1)])
-#     TN_rate = TN / len(y_test[np.where(y_test == 0)])
-#
-#     m_test = len(y_test)
-#     pos_test = len(y_test[np.where(y_test == 1)])
-#     neg_test = len(y_test[np.where(y_test == 0)])
-#
-#     return TP_rate, TN_rate, m_test, pos_test, neg_test
+# calculates true positive, true negative rate
+# y_test are array of true values in test set
+def tptns(predictions, y_test):
+    y_test = y_test.values
+    TP = 0
+    TN = 0
+    for i in range(len(predictions)):
+        if y_test[i] == predictions[i] == 1:
+            TP += 1
+        elif y_test[i] == predictions[i] == 0:
+            TN += 1
+    TP_rate = TP / len(y_test[np.where(y_test == 1)])
+    TN_rate = TN / len(y_test[np.where(y_test == 0)])
+
+    # m_test = len(y_test)
+    # pos_test = len(y_test[np.where(y_test == 1)])
+    # neg_test = len(y_test[np.where(y_test == 0)])
+
+    return TP_rate, TN_rate
+
 
 # Plot coefficients for mean/standard deviation features for fixed t*
 def coeff_plot(objective, t_star=2031):
@@ -136,15 +136,15 @@ def coeff_plot(objective, t_star=2031):
     coeff_mean = np.zeros((len(years), len(L_array)))
     coeff_std = np.zeros((len(years), len(L_array)))
 
-    i = 0   # counter
+    i = 0  # counter
     for L in L_array:
         export_df = build_data(objective=objective, t_star=t_star, L=L)
         X = export_df.drop(['y'], axis=1)
         y = export_df['y']
         LG_coeff = logistic_regrssion(X, y)[3]
 
-        coeff_mean[:, i] = LG_coeff[0][0:int(len(LG_coeff[0])/2)]
-        coeff_std[:, i] = LG_coeff[0][int(len(LG_coeff[0])/2):int(len(LG_coeff[0]))]
+        coeff_mean[:, i] = LG_coeff[0][0:int(len(LG_coeff[0]) / 2)]
+        coeff_std[:, i] = LG_coeff[0][int(len(LG_coeff[0]) / 2):int(len(LG_coeff[0]))]
         i += 1
 
     df_mean = pd.DataFrame(coeff_mean, columns=L_array, index=years)
@@ -165,7 +165,7 @@ def coeff_plot(objective, t_star=2031):
 
     plt.tight_layout()
     plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/' + 'LG_parameters_' +
-        str(t_star) + '.png')
+                str(t_star) + '.png')
     plt.clf()
 
     return
@@ -180,11 +180,11 @@ def heatmap(objective):
     # size of test set
     m_matrix = np.zeros((len(L_array), len(t_star_array)))
     # f1 scores for logistic regression
-    LG_f1_pos_matrix = np.zeros((len(L_array), len(t_star_array)))
-    LG_f1_neg_matrix = np.zeros((len(L_array), len(t_star_array)))
+    LG_TP_matrix = np.zeros((len(L_array), len(t_star_array)))
+    LG_TN_matrix = np.zeros((len(L_array), len(t_star_array)))
     # f1 scores for dummy classifier
-    D_f1_pos_matrix = np.zeros((len(L_array), len(t_star_array)))
-    D_f1_neg_matrix = np.zeros((len(L_array), len(t_star_array)))
+    D_TP_matrix = np.zeros((len(L_array), len(t_star_array)))
+    D_TN_matrix = np.zeros((len(L_array), len(t_star_array)))
 
     # run models
     for i in range(len(L_array)):
@@ -199,18 +199,18 @@ def heatmap(objective):
             LG_predictions, dummy_predictions, y_test, LG_coeff = logistic_regrssion(X, y)
 
             # get f1 scores for Logistic regression
-            LG_f1_pos = f1_score(y_true=y_test, y_pred=LG_predictions)
-            LG_f1_neg = f1_score(y_true=y_test, y_pred=LG_predictions, pos_label=0)
+            LG_TP = tptns(predictions=LG_predictions, y_test=y_test)[0]
+            LG_TN = tptns(predictions=LG_predictions, y_test=y_test)[1]
 
             # get f1 scores for dummy classifier
-            D_f1_pos = f1_score(y_true=y_test, y_pred=dummy_predictions)
-            D_f1_neg = f1_score(y_true=y_test, y_pred=dummy_predictions, pos_label=0)
+            D_TP = tptns(predictions=dummy_predictions, y_test=y_test)[0]
+            D_TN = tptns(predictions=dummy_predictions, y_test=y_test)[1]
 
             m_matrix[i, j] = len(y_test)
-            LG_f1_pos_matrix[i, j] = LG_f1_pos
-            LG_f1_neg_matrix[i, j] = LG_f1_neg
-            D_f1_pos_matrix[i, j] = D_f1_pos
-            D_f1_neg_matrix[i, j] = D_f1_neg
+            LG_TP_matrix[i, j] = LG_TP
+            LG_TN_matrix[i, j] = LG_TN
+            D_TP_matrix[i, j] = D_TP
+            D_TN_matrix[i, j] = D_TN
 
     ##  draw heatmaps
     ##  heatmap of test set sample size
@@ -236,72 +236,72 @@ def heatmap(objective):
     plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_test_size.png')
     plt.clf()
 
-    ## heatmap of f1 scores for logistic regression (positive class)
+    ## heatmap of TP rates for logistic regression
     fig, ax = plt.subplots()
     ax.set_xlabel('$t^*$')
     ax.set_ylabel('lead time, L (years)')
 
-    im = ax.imshow(LG_f1_pos_matrix, vmin=0, vmax=1)
+    im = ax.imshow(LG_TP_matrix, vmin=0, vmax=1)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
     ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
     ax.set_yticklabels([str(x) for x in L_array.tolist()])
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('f1 score, logistic regression (positive class)')
+    ax.set_title('Logistic regression true positive rate')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
-            text = ax.text(j, i, round(LG_f1_pos_matrix[i, j], 2),
+            text = ax.text(j, i, round(LG_TP_matrix[i, j], 2),
                            ha="center", va="center", color="w")
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_f1_positive.png')
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_positive.png')
     plt.clf()
 
-    ## heatmap of f1 scores for logistic regression (negative class)
+    ## heatmap of TN rates for logistic regression
     fig, ax = plt.subplots()
     ax.set_xlabel('$t^*$')
     ax.set_ylabel('lead time, L (years)')
 
-    im = ax.imshow(LG_f1_neg_matrix, vmin=0, vmax=1)
+    im = ax.imshow(LG_TN_matrix, vmin=0, vmax=1)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
     ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
     ax.set_yticklabels([str(x) for x in L_array.tolist()])
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('f1 score, logistic regression (negative class)')
+    ax.set_title('Logistic regression true negative rate')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
-            text = ax.text(j, i, round(LG_f1_neg_matrix[i, j], 2),
+            text = ax.text(j, i, round(LG_TN_matrix[i, j], 2),
                            ha="center", va="center", color="w")
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_f1_negative.png')
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_negative.png')
     plt.clf()
 
-    ## heatmap of f1 scores for dummy classifier (positive class)
+    ## heatmap of TP rates for dummy classifier
     fig, ax = plt.subplots()
     ax.set_xlabel('$t^*$')
     ax.set_ylabel('lead time, L (years)')
 
-    im = ax.imshow(D_f1_pos_matrix, vmin=0, vmax=1)
+    im = ax.imshow(D_TP_matrix, vmin=0, vmax=1)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
     ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
     ax.set_yticklabels([str(x) for x in L_array.tolist()])
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('f1 score, random classifier (positive class)')
+    ax.set_title('Random classifier true positive rate')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
-            text = ax.text(j, i, round(D_f1_pos_matrix[i, j], 2),
+            text = ax.text(j, i, round(D_TP_matrix[i, j], 2),
                            ha="center", va="center", color="w")
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/dummy_f1_positive.png')
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/dummy_true_positive.png')
     plt.clf()
 
     ## heatmap of f1 scores for dummy classifier (negative class)
@@ -309,22 +309,22 @@ def heatmap(objective):
     ax.set_xlabel('$t^*$')
     ax.set_ylabel('lead time, L (years)')
 
-    im = ax.imshow(D_f1_neg_matrix, vmin=0, vmax=1)
+    im = ax.imshow(D_TN_matrix, vmin=0, vmax=1)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
     ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
     ax.set_yticklabels([str(x) for x in L_array.tolist()])
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('f1 score, random classifier (negative class)')
+    ax.set_title('Random classifier true negative rate')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
-            text = ax.text(j, i, round(D_f1_neg_matrix[i, j], 2),
+            text = ax.text(j, i, round(D_TN_matrix[i, j], 2),
                            ha="center", va="center", color="w")
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/dummy_f1_negative.png')
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/dummy_true_negative.png')
     plt.clf()
 
     return
