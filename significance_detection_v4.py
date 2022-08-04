@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.stats as st
 from tqdm import tqdm
+import os.path
 
 
 # tqdm wraps iterables and shows progress bar
@@ -149,3 +150,54 @@ def first_significance(df):
     return output
 
 
+# conduct MWU test on expanding window of FLODO VOLUME (will this lead to more montonic detection?)
+# min periods is the minimum number of units before calculations of expanding window begins
+def expanding_significance(gcm, rcp, lulc, objective='Upstream_Flood_Volume_taf', alt='greater',
+                           min_periods=30):
+    # load scenario
+    scenario = gcm + '_' + rcp + '_r1i1p1'
+    df = pd.read_csv('data/obj_' + scenario + '_' + lulc + '.csv.zip', index_col=0, parse_dates=True)
+    df = df[[objective]]
+
+    # set historical df's
+    his_df = df['1951-10-01':'2000-10-01'].copy()
+    # set projection df based on minimum period size
+    lower_yr = str(2000 - min_periods + 1)
+    proj_df = df[lower_yr + '-10-01':'2098-10-01'].copy()
+
+    # get expanding samples (future), delete anything before year 2000
+    proj_df['expanding'] = [window.to_list() for window in proj_df.loc[:, objective].expanding(min_periods)]
+    proj_df.loc[lower_yr + '-10-01':'1999-10-01', 'expanding'] = float("NaN")
+
+    # iterate over expanding windows and conduct MWU test
+    for row in proj_df.itertuples():
+        # conduct MWU, skip if any NaN cells in window
+        if np.isnan(row[2]).any():
+            continue
+        else:
+            df.loc[row[0], objective + '_p-value'] = st.mannwhitneyu(row[2], his_df[objective], alternative=alt,
+                                                                     use_continuity=True)[1]
+    return df
+
+
+# get p-vals for expanding flooding MWU tests
+# parameters: same as definitions as SHARED PARAMETERS
+def expanding_export_agg(objective='Upstream_Flood_Volume_taf'):
+    # import aggregate csv's (empty, dates only)
+    index = pd.read_csv('empty/datetime.csv', index_col=0,
+                              parse_dates=True).index
+    # initiate dictionary to store p-vals for each scenario
+    data = {}
+    # conduct expanding significance for all gcm/rcp combinations. aggregate results(p-vals) into df's
+    for gcm in tqdm(gcm_list, desc='Getting p-vals'):
+        for rcp in rcp_list:
+            for lulc in lulc_names:
+                try:
+                    p_vals = expanding_significance(gcm=gcm, rcp=rcp, lulc=lulc)[objective + '_p-value'].values
+                    data[gcm + '_' + rcp + '_' + lulc] = p_vals
+
+                except FileNotFoundError:
+                    pass
+    # build export dataframe
+    exp_agg_all = pd.DataFrame(data, index=index)
+    return exp_agg_all

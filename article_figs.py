@@ -283,14 +283,14 @@ def plot_pvals(win_size=30):
     axes[0].legend(handles=legend_elements)
 
     plt.tight_layout()
-    plt.savefig('significance_results/article_figures/p_vals_win' + str(win_size) + '.png')
+    plt.savefig('significance_results/article_figures/p_vals_win' + str(win_size) + '.png', dpi=300)
     plt.clf()
 
     return
 
 
 # plot p-vals of scenarios that showed a detection and did not (25 randomly selected from each)
-def pvals_filter(win_size=30):
+def pvals_filter(win_size=50):
     # import pvals, delete values before year 2000 (historical)
     rel_p_vals = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) +
                              '_year_MA/' + 'less' + '_pvals_win' + str(win_size) + '.csv', index_col=0,
@@ -338,7 +338,7 @@ def pvals_filter(win_size=30):
     axes[1].legend(handles=legend_elements, loc='upper right')
 
     plt.tight_layout()
-    plt.savefig('significance_results/article_figures/p_vals_win' + str(win_size) + '_filtered.png')
+    plt.savefig('significance_results/article_figures/p_vals_win' + str(win_size) + '_filtered.png', dpi=300)
     plt.clf()
 
     return
@@ -423,8 +423,8 @@ def detect_vs_end_obj(objective, win_size=30):
     axs[1].spines['left'].set_visible(False)
     axs[1].tick_params(left=False)
     axs[0].spines['right'].set_visible(False)
-    axs[0].set_xlabel('detection year')
-    axs[0].set_ylabel(name)
+    axs[0].set_xlabel('detection year', size='large')
+    axs[0].set_ylabel(name, size='large')
     boxplot['fliers'][0].set(markersize=4, mec='black')
     boxplot['boxes'][0].set(linewidth=1, color='black')
     boxplot['medians'][0].set(linewidth=1, color='black')
@@ -435,11 +435,33 @@ def detect_vs_end_obj(objective, win_size=30):
 
     plt.savefig(
         'significance_results/article_figures/' + objective + '_detect_2098obj_' + alt + '_single_'
-        + 'win' + str(win_size) + '.svg')
+        + 'win' + str(win_size) + '.png', dpi=300)
     plt.clf()
 
     return output_df
 
+# plot p-vals for expanding window MWU test (FLOOD ONLY)
+def plot_pvals_expanding():
+    # load p_vals
+    expanding_pvals = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                       'expanding_window_p_vals.csv', index_col=0, parse_dates=True)
+    # plot
+    expanding_pvals = expanding_pvals['2000-10-1':'2098-10-1'].sample(n=50, axis=1, random_state=0)
+    expanding_pvals.plot(c='lightgray', legend=False)
+
+    # plot p=0.05
+    plt.axhline(y=0.05, color='r')
+    # create custom legend
+    legend_elements = [Line2D([0], [0], color='lightgray', label='50 randomly selected scenarios'),
+                       Line2D([0], [0], color='red', label='p=0.05'),
+                       ]
+    plt.legend(handles=legend_elements)
+
+    plt.ylabel('p-value')
+    plt.title('Flood volume, expanding window MWU test')
+
+    plt.savefig('significance_results/article_figures/Flood_pvals_expanding.png', dpi=300)
+    return
 
 def main():
     # # create ensemble subplots
@@ -461,12 +483,15 @@ def main():
     # # plot p-vals
     # plot_pvals(win_size=30)
 
-    # plot filtered p-vals
-    pvals_filter()
+    # # plot filtered p-vals
+    # pvals_filter()
 
     # # plot detection vs. end of simulation objective severity
     # detect_vs_end_obj('Rel_SOD_%')
     # detect_vs_end_obj('Upstream_Flood_Volume_taf')
+
+    # plot p-vals from expanding window MWU (FLOOD ONLY)
+    plot_pvals_expanding()
 
     return
 

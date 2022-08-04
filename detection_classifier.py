@@ -51,7 +51,7 @@ def build_data(objective, t_star=2020, L=30):
         for rcp in rcp_list:
             for lulc in lulc_list:
                 try:
-                    # read all scenarios
+                    # read scenario
                     scenario = gcm + '_' + rcp + '_r1i1p1'
                     df = pd.read_csv('data/obj_' + scenario + '_' + lulc + '.csv.zip', index_col=0,
                                      parse_dates=True)
@@ -116,6 +116,8 @@ def tptns(predictions, y_test):
             TP += 1
         elif y_test[i] == predictions[i] == 0:
             TN += 1
+
+    # TP rate = fraction of real positives that were predicted positive (recall)
     TP_rate = TP / len(y_test[np.where(y_test == 1)])
     TN_rate = TN / len(y_test[np.where(y_test == 0)])
 
@@ -136,20 +138,23 @@ def coeff_plot(objective, t_star=2031):
     coeff_mean = np.zeros((len(years), len(L_array)))
     coeff_std = np.zeros((len(years), len(L_array)))
 
-    i = 0  # counter
+    i = 0  # counter, iterate through columns (lead times)
     for L in L_array:
         export_df = build_data(objective=objective, t_star=t_star, L=L)
         X = export_df.drop(['y'], axis=1)
         y = export_df['y']
         LG_coeff = logistic_regrssion(X, y)[3]
 
+        # add model coefficients to matrices, splice array to split mean and std features
         coeff_mean[:, i] = LG_coeff[0][0:int(len(LG_coeff[0]) / 2)]
         coeff_std[:, i] = LG_coeff[0][int(len(LG_coeff[0]) / 2):int(len(LG_coeff[0]))]
         i += 1
 
+    # convert numpy matrix of coefficients to dataframe
     df_mean = pd.DataFrame(coeff_mean, columns=L_array, index=years)
     df_std = pd.DataFrame(coeff_std, columns=L_array, index=years)
 
+    # create plots
     fig, axes = plt.subplots(nrows=1, ncols=2, sharey=True, figsize=[8, 5])
     if objective == 'Rel_SOD_%':
         obj_title = 'Water supply reliability'
@@ -304,7 +309,7 @@ def heatmap(objective):
     plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/dummy_true_positive.png')
     plt.clf()
 
-    ## heatmap of f1 scores for dummy classifier (negative class)
+    ## heatmap of TN rates for dummy classifier
     fig, ax = plt.subplots()
     ax.set_xlabel('$t^*$')
     ax.set_ylabel('lead time, L (years)')

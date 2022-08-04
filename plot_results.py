@@ -277,51 +277,58 @@ def plot_single_lulc(agg_all, objective, alt, win_size):
 
 
 def main():
-    # list of objectives
-    obj_list = ['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf', 'Delta_Peak_Inflow_cfs']
-    # set window size
-    win_size = 30
+    # # list of objectives
+    # obj_list = ['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf', 'Delta_Peak_Inflow_cfs']
+    # # set window size
+    # win_size = 30
+    #
+    # # export results for each objective
+    # for objective in tqdm(obj_list, desc='Exporting Results'):
+    #     if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
+    #         alt = 'less'
+    #         # get p-vals and counts
+    #         agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
+    #
+    #         plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #
+    #         # delete count and rel_count columns for single scenario analysis
+    #         agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
+    #
+    #         plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #
+    #     if objective == 'Upstream_Flood_Volume_taf':
+    #         alt = 'greater'
+    #         agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
+    #
+    #         plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #
+    #         # delete count and rel_count columns for single scenario analysis
+    #         agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
+    #
+    #         plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+    #         plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
 
-    # export results for each objective
-    for objective in tqdm(obj_list, desc='Exporting Results'):
-        if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
-            alt = 'less'
-            # get p-vals and counts
-            agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
+    # export expanding window p-values for flooding (delete p-vals before year 2000)
+    exp_agg_all = sd.expanding_export_agg()
+    exp_agg_all.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                       'expanding_window_p_vals.csv')
 
-            plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-
-            # delete count and rel_count columns for single scenario analysis
-            agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
-
-            plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-
-        if objective == 'Upstream_Flood_Volume_taf':
-            alt = 'greater'
-            agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
-
-            plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-
-            # delete count and rel_count columns for single scenario analysis
-            agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
-
-            plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
     return
 
-    if __name__ == "__main__":
-        main()
+
+if __name__ == "__main__":
+    main()
 
     # if objective == 'Delta_Peak_Inflow_cfs':
     #     alt = 'two-sided'
