@@ -73,7 +73,6 @@ def sobol_detection(objective, alt, win_size):
     # (first and total-order indices with bootstrap confidence intervals)
     Si = sobol.analyze(problem, Y, print_to_console=True)
 
-
     # convert results to df and save
     total_Si, first_Si, second_Si = Si.to_df()
     total_Si.to_csv('significance_results/nonparametric/' + objective + '/additional_materials/sobol/' +
@@ -154,20 +153,100 @@ def scenario_no_detect(objective, alt, win_size):
     return output
 
 
+## FOR EXPANDING WINDOW/FLOODING ONLY
+## Sobol sensitivity analysis for first detection years, parameters consistent with plot_csv.py and above
+def sobol_detection_expanding():
+    problem = {
+        'num_vars': 3,
+        'names': ['rcp', 'gcm', 'lulc'],
+        'bounds': [[0, 4], [0, 31], [0, 36]]}
+
+    # Generate samples
+    X = saltelli.sample(problem, 1000)
+    X = X.astype(int)  # scenario numbers are integers
+
+    # Store scenario names
+    gcm_list = ['access1-0', 'bcc-csm1-1', 'bcc-csm1-1-m', 'canesm2', 'ccsm4', 'cesm1-bgc', 'cesm1-cam5',
+                'cmcc-cm', 'cnrm-cm5', 'csiro-mk3-6-0', 'fgoals-g2', 'fio-esm', 'gfdl-cm3', 'gfdl-esm2g',
+                'gfdl-esm2m', 'giss-e2-h-cc', 'giss-e2-r', 'giss-e2-r-cc', 'hadgem2-ao', 'hadgem2-cc',
+                'hadgem2-es', 'inmcm4', 'ipsl-cm5a-mr', 'ipsl-cm5b-lr', 'miroc5', 'miroc-esm', 'miroc-esm-chem',
+                'mpi-esm-lr', 'mpi-esm-mr', 'mri-cgcm3', 'noresm1-m']
+    rcp_list = ['rcp26', 'rcp45', 'rcp60', 'rcp85']
+    lulc_list = pd.read_csv('lulc_scenario_names.csv').name.to_list()
+
+    # initiate list of objective values (eventually converted to numpy vector)
+    Y_list = []
+    # import first detection years
+    data = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                       'expanding_window_single_total.csv', index_col='Model')
+    # take those three values and find the detection year of interest, save in vector Y
+
+    for scenario in X:
+        rcp_number = scenario[0]
+        gcm_number = scenario[1]
+        lulc_number = scenario[2]
+
+        # convert scenario numbers to actual names
+        gcm = gcm_list[gcm_number]
+        rcp = rcp_list[rcp_number]
+        lulc = lulc_list[lulc_number]
+
+        # read detection year, add to Y
+        # SCENARIO DOES NOT EXIST: ADD MEAN VALUE (2049)
+        # NO DETECTION (DETECTION YR >2100): ADD END OF PROJ (2100)
+        try:
+            scenario = gcm + '_' + rcp + '_' + lulc
+            detect = int(data.loc[scenario]['Year'])
+            Y_list.append(detect)
+        except KeyError:
+            Y_list.append(2049)
+        except ValueError:
+            Y_list.append(2100)
+
+    # convert Y to vector
+    Y = np.array(Y_list)
+
+    # Perform sensitivity analysis
+    # Returns a dictionary with keys 'S1', 'S1_conf', 'ST', and 'ST_conf'
+    # (first and total-order indices with bootstrap confidence intervals)
+    Si = sobol.analyze(problem, Y, print_to_console=True)
+
+    # convert results to df and save
+    total_Si, first_Si, second_Si = Si.to_df()
+    total_Si.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                    'expanding_window_sobol_ST.csv')
+    first_Si.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                    'expanding_window_sobol_S1.csv')
+    second_Si.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                     'expanding_window_sobol_S2.csv')
+
+    return Si
+
+
 # Run script
-scenario_nonexist()
+def main():
+    scenario_nonexist()
 
-# export results for each objective
-obj_list = ['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf']
-win_size = 30
+    # export results for each objective
+    obj_list = ['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf']
+    win_size = 30
 
-for objective in obj_list:
-    if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
-        alt = 'less'
-    if objective == 'Upstream_Flood_Volume_taf':
-        alt = 'greater'
-    sobol_detection(objective, alt, win_size)
-    scenario_no_detect(objective, alt, win_size)
+    for objective in obj_list:
+        if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
+            alt = 'less'
+        if objective == 'Upstream_Flood_Volume_taf':
+            alt = 'greater'
+        sobol_detection(objective, alt, win_size)
+        scenario_no_detect(objective, alt, win_size)
+
+    # run sobol analysis for expanding window floods
+    sobol_detection_expanding()
+
+    return
+
+if __name__ == "__main__":
+    main()
+
 
 # sobol_detection('Upstream_Flood_Volume_taf', 'greater', 30)
 # scenario_no_detect('Rel_NOD_%', 'less', 30)

@@ -243,7 +243,7 @@ def plot_single_gcm(agg_all, objective, alt, win_size):
     return
 
 
-## plot distribution of years of first significance (single scenario), sorted by gcm
+## plot distribution of years of first significance (single scenario), sorted by lulc
 # agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
 # make sure agg_all is consistent with other parameters (objective, alt, win_size)
 def plot_single_lulc(agg_all, objective, alt, win_size):
@@ -273,6 +273,201 @@ def plot_single_lulc(agg_all, objective, alt, win_size):
     ## plot/export results
     years_lulc.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
                       alt + '_single_bylulc_win' + str(win_size) + '.csv')
+    return
+
+
+### ANALYSIS FOR EXPANDING WINDOW FLOODS
+## plot distribution of years of first significance (single scenario), export years as csv
+# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_single_total_expanding(agg_all):
+    years = sd.first_significance(agg_all)
+    years.plot.hist(bins=20, legend=False)
+    plt.xlabel('detection year')
+
+    ## export results
+    plt.savefig('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                'expanding_window_single_total.png')
+    plt.clf()
+    years.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                 'expanding_window_single_total.csv')
+    return
+
+
+## plot distribution of years of first significance (single scenario), sorted by rcp
+# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_single_rcp_expanding(agg_all):
+    ## Separate by RCP
+    # Add empty df to add years of first detection, sorted by rcp
+    years_rcp = pd.DataFrame(index=range(len(gcm_list) * len(lulc_names)), columns=rcp_list)
+    # do one rcp at a time
+    for rcp in rcp_list:
+        # temporary df to store values for one rcp, reset for every rcp
+        temp = pd.read_csv('empty/datetime.csv', index_col=0,
+                           parse_dates=True)
+
+        # make total list of cols in agg_all df, check one col at a time for rcp name
+        for col in list(agg_all):
+            if rcp in col:
+                temp[col] = agg_all[col]
+
+        # temp filters all p-vals (from all relevant scenarios) for a single rcp after completing loop through cols
+        # find years of first significance from temp
+        years_temp = sd.first_significance(temp)
+        # add sample of years to df
+        years_rcp[rcp] = years_temp['Year']
+
+    # export results
+    years_rcp.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                     'expanding_window_single_byrcp.csv')
+    return
+
+
+## plot distribution of years of first significance (single scenario), sorted by gcm
+# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_single_gcm_expanding(agg_all):
+    ## Separate by GCM
+    # Add empty df to add years of first detection, sorted by gcm
+    years_gcm = pd.DataFrame(index=range(len(rcp_list) * len(lulc_names)), columns=gcm_list)
+    # do one gcm at a time
+    for gcm in gcm_list:
+        # temporary df to store values for one gcm, reset for every gcm
+        temp = pd.read_csv('empty/datetime.csv', index_col=0,
+                           parse_dates=True)
+
+        # make total list of cols in agg_all df, check one col at a time for gcm name
+        for col in list(agg_all):
+            if gcm in col:
+                temp[col] = agg_all[col]
+
+        # temp filters all p-vals (from all relevant scenarios) for a single gcm after completing loop through cols
+        # find years of first significance from temp
+        years_temp = sd.first_significance(temp)
+        # add sample of years to df
+        years_gcm[gcm] = years_temp['Year']
+
+    # export results
+    years_gcm.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                     'expanding_window_single_bygcm.csv')
+    return
+
+
+## plot distribution of years of first significance (single scenario), sorted by lulc
+# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_single_lulc_expanding(agg_all):
+    ## Separate by LULC
+    # Add empty df to add years of first detection, sorted by lulc
+    years_lulc = pd.DataFrame(index=range(len(rcp_list) * len(gcm_list)), columns=lulc_names)
+    # do one lulc at a time
+    for lulc in lulc_names:
+        # temporary df to store values for one lulc, reset for every lulc
+        temp = pd.read_csv('empty/datetime.csv', index_col=0,
+                           parse_dates=True)
+
+        # make total list of cols in agg_all df, check one col at a time for lulc name
+        for col in list(agg_all):
+            if lulc in col:
+                temp[col] = agg_all[col]
+
+        # temp filters all p-vals (from all relevant scenarios) for a single lulc after completing loop through cols
+        # find years of first significance from temp
+        years_temp = sd.first_significance(temp)
+        # add sample of years to df
+        years_lulc[lulc] = years_temp['Year']
+
+    ## plot/export results
+    years_lulc.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                      'expanding_window_single_bylulc.csv')
+    return
+
+
+## Plot total relative counts (multiple scenario) separated by rcp, per year
+# agg_all=df of all p_vals (from significance_detection.py, export_agg()). DOES NOT MATTER IF COUNTS ARE NOT ADDED
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_multi_rcp_expanding(agg_all):
+    ## Separate by RCP
+    # Add empty df with dates to add counts to, sorted by rcp
+    counts_rcp = pd.read_csv('empty/datetime.csv', index_col=0,
+                             parse_dates=True)
+    # do one rcp at a time
+    for rcp in rcp_list:
+        # temporary df to store values for one rcp
+        temp = pd.read_csv('empty/datetime.csv', index_col=0,
+                           parse_dates=True)
+
+        # check one col at a time for rcp, makes sub df with rcp's of only one type
+        for col in list(agg_all):
+            if rcp in col:
+                temp[col] = agg_all[col]
+        # add (relative) counts from temp df and save
+        temp = sd.p_val_count(temp)
+        counts_rcp[rcp + '_rel_counts'] = temp['count'] / (len(list(temp)) - 1)
+
+    ## export results
+    counts_rcp.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                      'expanding_window_multi_byrcp.csv')
+
+    return
+
+
+## Plot total relative counts (multiple scenario) separated by gcm, per year
+# agg_all=df of all p_vals (from significance_detection.py, export_agg()). DOES NOT MATTER IF COUNTS ARE NOT ADDED
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_multi_gcm_expanding(agg_all):
+    ## Separate by GCM
+    # Add empty df with dates to add counts to, sorted by gcm
+    counts_gcm = pd.read_csv('empty/datetime.csv', index_col=0,
+                             parse_dates=True)
+    # do one gcm at a time
+    for gcm in gcm_list:
+        # temporary df to store values for one gcm
+        temp = pd.read_csv('empty/datetime.csv', index_col=0,
+                           parse_dates=True)
+
+        # check one col at a time for gcm, makes sub df with gcm's of only one type
+        for col in list(agg_all):
+            if gcm in col:
+                temp[col] = agg_all[col]
+        # add (relative) counts from temp df and save
+        temp = sd.p_val_count(temp)
+        counts_gcm[gcm + '_rel_counts'] = temp['count'] / (len(list(temp)) - 1)
+
+    ## export results
+    counts_gcm.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                      'expanding_window_multi_bygcm.csv')
+
+    return
+
+
+## Plot total relative counts (multiple scenario) separated by lulc, per year
+# agg_all=df of all p_vals (from significance_detection.py, export_agg())
+# FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
+def plot_multi_lulc_expanding(agg_all):
+    ## Separate by lulc
+    # Add empty df with dates to add counts to, sorted by lulc
+    counts_lulc = pd.read_csv('empty/datetime.csv', index_col=0,
+                              parse_dates=True)
+    # do one lulc at a time
+    for lulc in lulc_names:
+        # temporary df to store values for one lulc
+        temp = pd.read_csv('empty/datetime.csv', index_col=0,
+                           parse_dates=True)
+
+        # check one col at a time for lulc, makes sub df with lulc's of only one type
+        for col in list(agg_all):
+            if lulc in col:
+                temp[col] = agg_all[col]
+        # add (relative) counts from temp df and save
+        temp = sd.p_val_count(temp)
+        counts_lulc[lulc + '_rel_counts'] = temp['count'] / (len(list(temp)) - 1)
+
+    # export results
+    counts_lulc.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                       'expanding_window_multi_bylulc.csv')
+
     return
 
 
@@ -319,29 +514,26 @@ def main():
     #         plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
     #         plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
 
+    ## FOR EXPANDING WINDOW ANALYSIS/FLOOD ONLY
     # export expanding window p-values for flooding (delete p-vals before year 2000)
-    exp_agg_all = sd.expanding_export_agg()
+    exp_agg_all = sd.p_val_count(sd.expanding_export_agg())
+    exp_agg_all['rel_count'] = exp_agg_all['count'] / (len(list(exp_agg_all)) - 1)
     exp_agg_all.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
                        'expanding_window_p_vals.csv')
+    plot_multi_rcp_expanding(agg_all=exp_agg_all)
+    plot_multi_gcm_expanding(agg_all=exp_agg_all)
+    plot_multi_lulc_expanding(agg_all=exp_agg_all)
+
+    # delete count and rel_count columns for single scenario analysis
+    exp_agg_all = exp_agg_all.drop(['count', 'rel_count'], axis='columns')
+
+    plot_single_total_expanding(agg_all=exp_agg_all)
+    plot_single_rcp_expanding(agg_all=exp_agg_all)
+    plot_single_gcm_expanding(agg_all=exp_agg_all)
+    plot_single_lulc_expanding(agg_all=exp_agg_all)
 
     return
 
 
 if __name__ == "__main__":
     main()
-
-    # if objective == 'Delta_Peak_Inflow_cfs':
-    #     alt = 'two-sided'
-    #     agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
-    #     plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #     plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #     plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #     plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #
-    #     # delete count and rel_count columns for single scenario analysis
-    #     agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
-    #
-    #     plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #     plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #     plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-    #     plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)

@@ -440,11 +440,13 @@ def detect_vs_end_obj(objective, win_size=30):
 
     return output_df
 
+
 # plot p-vals for expanding window MWU test (FLOOD ONLY)
 def plot_pvals_expanding():
     # load p_vals
     expanding_pvals = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
-                       'expanding_window_p_vals.csv', index_col=0, parse_dates=True)
+                                  'expanding_window_p_vals.csv', index_col=0, parse_dates=True).drop(
+        ['count', 'rel_count'], axis=1)
     # plot
     expanding_pvals = expanding_pvals['2000-10-1':'2098-10-1'].sample(n=50, axis=1, random_state=0)
     expanding_pvals.plot(c='lightgray', legend=False)
@@ -462,6 +464,115 @@ def plot_pvals_expanding():
 
     plt.savefig('significance_results/article_figures/Flood_pvals_expanding.png', dpi=300)
     return
+
+
+## Plot distribution for first detection years for water supply reliability (SOD) and upstream flood volume (EXPANDING)
+def plot_single_total_expanding(win_size=30):
+    # Load first detection years from csv's
+    years_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/' +
+                            'less' + '_single_total_win' + str(win_size) + '.csv', index_col=0)['Year']
+    years_flood = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                              'expanding_window_single_total.csv', index_col=0)['Year']
+
+    # create subpolots
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=[10, 4], sharey=True)
+    years_rel.plot.hist(bins=20, legend=False, ax=axes[0])
+    years_flood.plot.hist(bins=20, legend=False, ax=axes[1])
+    axes[0].set_xlabel('detection year')
+    axes[0].set_title('First detection years for water supply reliability')
+    axes[1].set_xlabel('detection year')
+    axes[1].set_title('First detection years for upstream flood volume')
+
+    ## export results
+    plt.tight_layout()
+    plt.savefig('significance_results/article_figures/first_detection_years_fexp.png')
+    plt.clf()
+    return
+
+
+## Plot detection rates for expanding window analysis (FLOOD ONLY)
+def plot_multi_total_expanding():
+    # Load p-val data (rel counts is included as a column)
+    agg_all_exp = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                              'expanding_window_p_vals.csv', index_col=0, parse_dates=True)
+
+    # Plot total relative counts
+    fig = plt.figure()
+    agg_all_exp.loc['2000-10-1':'2098-10-1', 'rel_count'].plot()
+
+    plt.ylabel('detection rate')
+    plt.ylim(top=0.3)
+    plt.title('Flood volume, expanding window')
+
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig('significance_results/article_figures/detection_rate_expanding.png')
+    plt.clf()
+
+    return
+
+
+## Create histograms for detection rates by gcm/rcp/lulc at the end of simulation (2098)
+# FLOOD = EXPANDING WINDOW
+def plot_multi_sorted_expanding(win_size=30):
+    # load detection rates for water supply reliability sorted by gcm/rcp/lulc
+    df_gcm_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/'
+                             + 'less' + '_multi_' + 'bygcm' + '_win' +
+                             str(win_size) + '.csv', index_col=0, parse_dates=True)
+    df_rcp_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/'
+                             + 'less' + '_multi_' + 'byrcp' + '_win' +
+                             str(win_size) + '.csv', index_col=0, parse_dates=True)
+    df_lulc_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/'
+                              + 'less' + '_multi_' + 'bylulc' + '_win' +
+                              str(win_size) + '.csv', index_col=0, parse_dates=True)
+
+    # load detection rates for flood volume sorted by gcm/rcp/lulc
+    df_gcm_flood = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                               'expanding_window_multi_bygcm.csv', index_col=0, parse_dates=True)
+    df_rcp_flood = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                               'expanding_window_multi_byrcp.csv', index_col=0, parse_dates=True)
+    df_lulc_flood = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+                                'expanding_window_multi_bylulc.csv', index_col=0, parse_dates=True)
+    # create subplots
+    fig, axes = plt.subplots(nrows=2, ncols=3, figsize=[10, 6])
+    fig.suptitle('Distribution of detection rates in 2098 by GCM/RCP/LULC')
+
+    df_gcm_rel.loc['2098-10-01', :].plot.hist(bins=10, ax=axes[0, 0])
+    axes[0, 0].set_title('Water supply reliability by GCM')
+    axes[0, 0].set_xlabel('detection rate')
+
+    df_lulc_rel.loc['2098-10-01', :].plot.hist(bins=10, ax=axes[0, 1])
+    axes[0, 1].set_title('Water supply reliability by LULC')
+    axes[0, 1].set_xlabel('detection rate')
+
+    # df_rcp_rel.loc['2098-10-01', :].plot.hist(bins=10, ax=axes[0, 2])
+    axes[0, 2].bar(['rcp26', 'rcp45', 'rcp60', 'rcp85'], df_rcp_rel.loc['2098-10-01', :], width=0.4)
+    axes[0, 2].set_title('Water supply reliability by RCP')
+    axes[0, 2].set_ylabel('detection rate')
+    axes[0, 2].set_ylim(top=1)
+
+    df_gcm_flood.loc['2098-10-01', :].plot.hist(bins=10, ax=axes[1, 0])
+    axes[1, 0].set_title('Upstream flood volume by GCM')
+    axes[1, 0].set_xlabel('detection rate')
+
+    df_lulc_flood.loc['2098-10-01', :].plot.hist(bins=10, ax=axes[1, 1])
+    axes[1, 1].set_title('Upstream flood volume by LULC')
+    axes[1, 1].set_xlabel('detection rate')
+    # axes[1, 1].set_xlim(left=0, right=1)
+
+    # df_rcp_flood.loc['2098-10-01', :].plot.hist(bins=10, ax=axes[1, 2])
+    axes[1, 2].bar(['rcp26', 'rcp45', 'rcp60', 'rcp85'], df_rcp_flood.loc['2098-10-01', :], width=0.4)
+    axes[1, 2].set_title('Upstream flood volume by RCP')
+    axes[1, 2].set_ylabel('detection rate')
+    axes[1, 2].set_ylim(top=1)
+
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig('significance_results/article_figures/detection_rate_sorted_fexp.png')
+    plt.clf()
+
+    return
+
 
 def main():
     # # create ensemble subplots
@@ -490,8 +601,17 @@ def main():
     # detect_vs_end_obj('Rel_SOD_%')
     # detect_vs_end_obj('Upstream_Flood_Volume_taf')
 
-    # plot p-vals from expanding window MWU (FLOOD ONLY)
-    plot_pvals_expanding()
+    # # plot p-vals from expanding window MWU (FLOOD ONLY)
+    # plot_pvals_expanding()
+
+    # plot distribution of first detection (Flood = EXPANDING)
+    plot_single_total_expanding()
+
+    # plot detection rate for expanding window
+    plot_multi_total_expanding()
+
+    # plot sorted detection rate for expanding window
+    plot_multi_sorted_expanding()
 
     return
 
