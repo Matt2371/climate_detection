@@ -575,34 +575,34 @@ def plot_multi_sorted_expanding(win_size=30):
 
 
 def main():
-    # # create ensemble subplots
-    # plot_ensemble()
+    # create ensemble subplots
+    plot_ensemble()
 
-    # # plot distribution of first detection
-    # plot_single_total()
+    # plot distribution of first detection
+    plot_single_total()
 
-    # # plot statistics of first detection sorted by gcm/rcp/lulc
-    # plot_single_sorted('Rel_SOD_%')
-    # plot_single_sorted('Upstream_Flood_Volume_taf')
+    # plot statistics of first detection sorted by gcm/rcp/lulc
+    plot_single_sorted('Rel_SOD_%')
+    plot_single_sorted('Upstream_Flood_Volume_taf')
 
-    # # plot detection rates
-    # plot_multi_total()
+    # plot detection rates
+    plot_multi_total()
 
-    # # plot detection rate sorted by gcm/rcp/lulc in 2098
-    # plot_multi_sorted()
+    # plot detection rate sorted by gcm/rcp/lulc in 2098
+    plot_multi_sorted()
 
-    # # plot p-vals
-    # plot_pvals(win_size=30)
+    # plot p-vals
+    plot_pvals(win_size=30)
 
-    # # plot filtered p-vals
-    # pvals_filter()
+    # plot filtered p-vals
+    pvals_filter()
 
-    # # plot detection vs. end of simulation objective severity
-    # detect_vs_end_obj('Rel_SOD_%')
-    # detect_vs_end_obj('Upstream_Flood_Volume_taf')
+    # plot detection vs. end of simulation objective severity
+    detect_vs_end_obj('Rel_SOD_%')
+    detect_vs_end_obj('Upstream_Flood_Volume_taf')
 
-    # # plot p-vals from expanding window MWU (FLOOD ONLY)
-    # plot_pvals_expanding()
+    # plot p-vals from expanding window MWU (FLOOD ONLY)
+    plot_pvals_expanding()
 
     # plot distribution of first detection (Flood = EXPANDING)
     plot_single_total_expanding()

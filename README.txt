@@ -6,11 +6,12 @@ multiple models for each year. Results ares sorted by GCM/RCP choice (CMIP5 scen
 
 significance_detection_v4.py defined functions for multiple/single scenario analysis
 plot_results.py *RUN FIRST TO GET NECCESSARY FILES* defines and executes functions to plot and export results (csv) based on significance detection functions
-detection_classifier.py uses logistic regression to predict detections within lead time L years after year t*. Performance graded with f1 scores, and compared to
+detection_classifier.py uses logistic regression to predict detections within lead time L years after year t*. Performance graded with true positive and true negative scores, and compared to
 a dummy random classifier. Choises of L and t* flexible.
 plot_csv.py exports additional tables and plots of csv files exported by plot_results.py
 sobol-sensitivity.py runs sobol sensitivity analysis on output (single scenario) csv files, also exports information on no exist/no detection scenarios
 plot_ensemble.py plots ensmeble of all model scenarios
+article_figs.py creates figures for journal manuscript
 
 FOLDERS:
 archive/ duplicate or uneeded files
@@ -27,6 +28,7 @@ multi: multiple scenario analysis (e.g. count significant detection across multi
 single: single scenario analysis (e.g. for each scenario, what is the first year of detection?)
 win(num): size of rolling window used in analysis
 byrcp/bygcm/bylulc: indicates by which scenario types results are sorted (total/no label = all scenarios)
+_expanding: indicates expanding window analysis (instead of rolling). FLOOD OBJECTIVE ONLY
 
 NOTES:
 Copy of SSJRB data: https://drive.google.com/file/d/1ZGVAbwcIbdQS1wmuHeZWKkiAEgK5GYPu/view?usp=sharing

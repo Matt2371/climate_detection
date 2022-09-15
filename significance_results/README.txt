@@ -9,9 +9,6 @@ in the dataset
 sobol_sensitivity.xlsx:
 summarizes sobol sensitivity analysis for all objectives using 30 yr MA results
 
-figures.pptx: figure sequence
-
-significance_detection_report: documents all project findings
 
 FOLDERS:
 nonparametric/
