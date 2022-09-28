@@ -10,6 +10,7 @@ import significance_detection_v4 as sd
 
 
 ### Create figures to be used in journal article
+## LOGISTIC REGRESSION RESULTS PLOTTED SEPERATELY
 
 ## Ensemble subplots for water supply reliability (SOD) and upstream flood volume and add scatterplot for observations
 def plot_ensemble():
@@ -96,18 +97,19 @@ def plot_single_total(win_size=30):
 
 ## Plot stats of first detection years (sorted by gcm/rcp/lulc)
 # objective = 'Rel_SOD_%' or 'Upstream_Flood_Volume_taf'
+# OJECTIVES CONSOLIDATED IN POWERPOINT
 def plot_single_sorted(objective, win_size=30):
     # set alternative and figure title based on objective
     if objective == 'Rel_SOD_%':
         alt = 'less'
-        name = 'water supply reliability'
+        name = 'Water supply reliability'
     else:
         alt = 'greater'
-        name = 'upstream flood volume'
+        name = 'Upstream flood volume'
 
     # create subplots
     fig, axes = plt.subplots(nrows=3, ncols=3, figsize=[10, 8])
-    fig.suptitle('Descriptive statistics for first detection years (' + name + ')', size='xx-large')
+    fig.suptitle(name, size='xx-large')
 
     # plot gcm stats
     gcm_stat = pd.read_csv('significance_results/nonparametric/' + objective + '/additional_materials/' + alt +
@@ -154,7 +156,7 @@ def plot_single_sorted(objective, win_size=30):
     axes[2, 2].set_title('Sample sizes sorted by RCP')
 
     plt.tight_layout()
-    plt.savefig('significance_results/article_figures/first_detection_stats_' + objective + '.png')
+    plt.savefig('significance_results/article_figures/first_detection_stats_' + objective + '.png', dpi=300)
     plt.clf()
 
     return
@@ -575,43 +577,43 @@ def plot_multi_sorted_expanding(win_size=30):
 
 
 def main():
-    # create ensemble subplots
-    plot_ensemble()
-
-    # plot distribution of first detection
-    plot_single_total()
-
+    # # create ensemble subplots
+    # plot_ensemble()
+    #
+    # # plot distribution of first detection
+    # plot_single_total()
+    #
     # plot statistics of first detection sorted by gcm/rcp/lulc
     plot_single_sorted('Rel_SOD_%')
     plot_single_sorted('Upstream_Flood_Volume_taf')
-
-    # plot detection rates
-    plot_multi_total()
-
-    # plot detection rate sorted by gcm/rcp/lulc in 2098
-    plot_multi_sorted()
-
-    # plot p-vals
-    plot_pvals(win_size=30)
-
-    # plot filtered p-vals
-    pvals_filter()
-
-    # plot detection vs. end of simulation objective severity
-    detect_vs_end_obj('Rel_SOD_%')
-    detect_vs_end_obj('Upstream_Flood_Volume_taf')
-
-    # plot p-vals from expanding window MWU (FLOOD ONLY)
-    plot_pvals_expanding()
-
-    # plot distribution of first detection (Flood = EXPANDING)
-    plot_single_total_expanding()
-
-    # plot detection rate for expanding window
-    plot_multi_total_expanding()
-
-    # plot sorted detection rate for expanding window
-    plot_multi_sorted_expanding()
+    #
+    # # plot detection rates
+    # plot_multi_total()
+    #
+    # # plot detection rate sorted by gcm/rcp/lulc in 2098
+    # plot_multi_sorted()
+    #
+    # # plot p-vals
+    # plot_pvals(win_size=30)
+    #
+    # # plot filtered p-vals
+    # pvals_filter()
+    #
+    # # plot detection vs. end of simulation objective severity
+    # detect_vs_end_obj('Rel_SOD_%')
+    # detect_vs_end_obj('Upstream_Flood_Volume_taf')
+    #
+    # # plot p-vals from expanding window MWU (FLOOD ONLY)
+    # plot_pvals_expanding()
+    #
+    # # plot distribution of first detection (Flood = EXPANDING)
+    # plot_single_total_expanding()
+    #
+    # # plot detection rate for expanding window
+    # plot_multi_total_expanding()
+    #
+    # # plot sorted detection rate for expanding window
+    # plot_multi_sorted_expanding()
 
     return
 

@@ -6,12 +6,11 @@ multiple models for each year. Results ares sorted by GCM/RCP choice (CMIP5 scen
 
 significance_detection_v4.py defined functions for multiple/single scenario analysis
 plot_results.py *RUN FIRST TO GET NECCESSARY FILES* defines and executes functions to plot and export results (csv) based on significance detection functions
-detection_classifier.py uses logistic regression to predict detections within lead time L years after year t*. Performance graded with true positive and true negative scores, and compared to
-a dummy random classifier. Choises of L and t* flexible.
+detection_classifier.py uses logistic regression to predict detections within lead time L years after year t*. Performance graded with true positive and true negative scores. Choices of L and t* flexible.
 plot_csv.py exports additional tables and plots of csv files exported by plot_results.py
 sobol-sensitivity.py runs sobol sensitivity analysis on output (single scenario) csv files, also exports information on no exist/no detection scenarios
 plot_ensemble.py plots ensmeble of all model scenarios
-article_figs.py creates figures for journal manuscript
+article_figs.py creates figures for journal manuscript *logistic regression figures plotted seperately
 
 FOLDERS:
 archive/ duplicate or uneeded files
