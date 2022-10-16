@@ -5,27 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="559e8d4f-26db-4e56-80de-a6468d6d21cc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/README.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/article_figs.py" beforeDir="false" afterPath="$PROJECT_DIR$/article_figs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/detection_classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/detection_classifier.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scrap.py" beforeDir="false" afterPath="$PROJECT_DIR$/scrap.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/figures.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/figures.pptx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/first_detection_stats_Rel_SOD_%.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/first_detection_stats_Rel_SOD_%.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/first_detection_stats_Upstream_Flood_Volume_taf.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/first_detection_stats_Upstream_Flood_Volume_taf.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/logistic_tptn.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_parameters_2001.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_parameters_2001.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_parameters_2031.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_parameters_2031.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_parameters_2051.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_parameters_2051.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_test_size.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_test_size.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_true_negative.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_true_negative.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_true_positive.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Rel_SOD_%/additional_materials/LG_true_positive.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_parameters_2001.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_parameters_2001.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_parameters_2031.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_parameters_2031.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_parameters_2051.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_parameters_2051.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_test_size.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_test_size.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_true_negative.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_true_negative.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_true_positive.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/nonparametric/Upstream_Flood_Volume_taf/additional_materials/LG_true_positive.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/ensemble_plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/ensemble_plot.png" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -211,6 +192,7 @@
       <workItem from="1663968333255" duration="4000" />
       <workItem from="1663970366929" duration="203000" />
       <workItem from="1664316652591" duration="3686000" />
+      <workItem from="1665770753944" duration="659000" />
     </task>
     <servers />
   </component>
@@ -222,6 +204,6 @@
     <SUITE FILE_PATH="coverage/climate_detection_time$sobol_sensitivity.coverage" NAME="sobol-sensitivity Coverage Results" MODIFIED="1660340695016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/climate_detection_time$plot_results.coverage" NAME="plot_results Coverage Results" MODIFIED="1660337091939" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/climate_detection_time$scrap.coverage" NAME="scrap Coverage Results" MODIFIED="1663970538407" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/climate_detection_time$article_figs.coverage" NAME="article_figs Coverage Results" MODIFIED="1664323473431" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/climate_detection_time$article_figs.coverage" NAME="article_figs Coverage Results" MODIFIED="1665770805040" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

@@ -64,7 +64,7 @@ def plot_ensemble():
 
     plt.tight_layout()
     # plt.show()
-    plt.savefig('significance_results/article_figures/ensemble_plot.png')
+    plt.savefig('significance_results/article_figures/ensemble_plot.png', dpi=300)
     plt.clf()
 
     return
@@ -577,15 +577,15 @@ def plot_multi_sorted_expanding(win_size=30):
 
 
 def main():
-    # # create ensemble subplots
-    # plot_ensemble()
+    # create ensemble subplots
+    plot_ensemble()
     #
     # # plot distribution of first detection
     # plot_single_total()
     #
-    # plot statistics of first detection sorted by gcm/rcp/lulc
-    plot_single_sorted('Rel_SOD_%')
-    plot_single_sorted('Upstream_Flood_Volume_taf')
+    # # plot statistics of first detection sorted by gcm/rcp/lulc
+    # plot_single_sorted('Rel_SOD_%')
+    # plot_single_sorted('Upstream_Flood_Volume_taf')
     #
     # # plot detection rates
     # plot_multi_total()
