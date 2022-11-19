@@ -162,11 +162,13 @@ def coeff_plot(objective, t_star=2031):
         obj_title = 'Flooding'
 
     df_mean.plot(ax=axes[0], xlabel='normalized trailing decade mean', legend=False)
+    axes[0].set_xlabel('normalized trailing decade mean', size='x-large')
     df_std.plot(ax=axes[1], xlabel='normalized trailing decade stdv')
+    axes[1].set_xlabel('normalized trailing decade stdv', size='x-large')
     axes[1].legend(title='lead time, years')
-    fig.suptitle(obj_title + ', $t^*= $' + str(t_star))
-    fig.supxlabel('features')
-    fig.supylabel('parameters')
+    fig.suptitle(obj_title + ', $t^*= $' + str(t_star), size='x-large')
+    fig.supxlabel('features', size='x-large')
+    fig.supylabel('parameters', size='x-large')
 
     plt.tight_layout()
     plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/' + 'LG_parameters_' +
@@ -212,21 +214,21 @@ def heatmap(objective):
     ##  draw heatmaps
     ##  heatmap of test set sample size
     fig, ax = plt.subplots()
-    ax.set_xlabel('$t^*$')
-    ax.set_ylabel('lead time, L (years)')
+    ax.set_xlabel('$t^*$', size='x-large')
+    ax.set_ylabel('lead time, L (years)', size='x-large')
 
     im = ax.imshow(m_matrix)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
-    ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
-    ax.set_yticklabels([str(x) for x in L_array.tolist()])
+    ax.set_xticklabels([str(x) for x in t_star_array.tolist()], size='large')
+    ax.set_yticklabels([str(x) for x in L_array.tolist()], size='large')
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('Size of test set')
+    ax.set_title('Size of test set', size='x-large')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
             text = ax.text(j, i, m_matrix[i, j],
-                           ha="center", va="center", color="w")
+                           ha="center", va="center", color="w", size='large')
 
     plt.colorbar(im)
     plt.tight_layout()
@@ -235,21 +237,21 @@ def heatmap(objective):
 
     ## heatmap of TP rates for logistic regression
     fig, ax = plt.subplots()
-    ax.set_xlabel('$t^*$')
-    ax.set_ylabel('lead time, L (years)')
+    ax.set_xlabel('$t^*$', size='x-large')
+    ax.set_ylabel('lead time, L (years)', size='x-large')
 
     im = ax.imshow(LG_TP_matrix, vmin=0, vmax=1)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
-    ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
-    ax.set_yticklabels([str(x) for x in L_array.tolist()])
+    ax.set_xticklabels([str(x) for x in t_star_array.tolist()], size='large')
+    ax.set_yticklabels([str(x) for x in L_array.tolist()], size='large')
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('Logistic regression true positive rate')
+    ax.set_title('Logistic regression true positive rate', size='x-large')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
             text = ax.text(j, i, round(LG_TP_matrix[i, j], 2),
-                           ha="center", va="center", color="w")
+                           ha="center", va="center", color="w", size='large')
     plt.colorbar(im)
     plt.tight_layout()
     plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_positive.png', dpi=300)
@@ -257,21 +259,21 @@ def heatmap(objective):
 
     ## heatmap of TN rates for logistic regression
     fig, ax = plt.subplots()
-    ax.set_xlabel('$t^*$')
-    ax.set_ylabel('lead time, L (years)')
+    ax.set_xlabel('$t^*$', size='x-large')
+    ax.set_ylabel('lead time, L (years)', size='x-large')
 
     im = ax.imshow(LG_TN_matrix, vmin=0, vmax=1)
     # Show all ticks and label them with the respective list entries
     ax.set_xticks(np.arange(len(t_star_array)))
-    ax.set_xticklabels([str(x) for x in t_star_array.tolist()])
-    ax.set_yticklabels([str(x) for x in L_array.tolist()])
+    ax.set_xticklabels([str(x) for x in t_star_array.tolist()], size='large')
+    ax.set_yticklabels([str(x) for x in L_array.tolist()], size='large')
     ax.set_yticks(np.arange(len(L_array)))
-    ax.set_title('Logistic regression true negative rate')
+    ax.set_title('Logistic regression true negative rate', size='x-large')
     # annotate
     for i in range(len(L_array)):
         for j in range(len(t_star_array)):
             text = ax.text(j, i, round(LG_TN_matrix[i, j], 2),
-                           ha="center", va="center", color="w")
+                           ha="center", va="center", color="w", size='large')
 
     plt.colorbar(im)
     plt.tight_layout()

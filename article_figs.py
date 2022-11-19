@@ -22,7 +22,7 @@ def plot_ensemble():
     flood_min = df_flood['1981-10-1':'2000-10-1'].min().min()
     flood_max = df_flood['1981-10-1':'2000-10-1'].max().max()
 
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=[10, 4])
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=[11, 4])
 
     # add scatterplot of observed values (20-year average)
     obs = pd.read_csv('obj_historical.csv', index_col=0, parse_dates=True)
@@ -48,10 +48,10 @@ def plot_ensemble():
     axes[1].fill_between(df_flood['2000-10-1':'2098-10-1'].index, flood_min, flood_max,
                          facecolor='green', alpha=0.2, zorder=5)
 
-    axes[0].set_ylabel('reliability')
-    axes[0].set_title('Water supply reliability projections, 30 yr MA')
-    axes[1].set_ylabel('flood volume (TAF)')
-    axes[1].set_title('Upstream flood volume projections, 30 yr MA')
+    axes[0].set_ylabel('reliability', size='x-large')
+    axes[0].set_title('Water supply reliability projections, 30 yr MA', size='x-large')
+    axes[1].set_ylabel('flood volume (TAF)', size='x-large')
+    axes[1].set_title('Upstream flood volume projections, 30 yr MA', size='x-large')
 
     # create custom legend
     legend_elements = [Line2D([0], [0], color='lightgray', label='projections'),
@@ -175,15 +175,17 @@ def plot_multi_total(win_size=30):
     agg_all_rel.loc['2000-10-1':'2098-10-1', 'rel_count'].plot(ax=axes[0])
     agg_all_flood.loc['2000-10-1':'2098-10-1', 'rel_count'].plot(ax=axes[1])
 
-    axes[0].set_ylabel('detection rate')
-    axes[0].set_title('Water supply reliability')
-    axes[1].set_ylabel('detection rate')
-    axes[1].set_title('Upstream flood volume')
-    fig.suptitle('Fraction of scenarios with detection')
+    axes[0].set_ylabel('detection rate', size='x-large')
+    axes[0].set_title('Water supply reliability', size='xx-large')
+    axes[0].set_xlabel('datetime', size='xx-large')
+    axes[1].set_ylabel('detection rate', size='x-large')
+    axes[1].set_title('Upstream flood volume', size='xx-large')
+    axes[1].set_xlabel('datetime', size='xx-large')
+    fig.suptitle('Fraction of scenarios with detection', size='xx-large')
 
     plt.tight_layout()
     # plt.show()
-    plt.savefig('significance_results/article_figures/detection_rate.png')
+    plt.savefig('significance_results/article_figures/detection_rate.png', dpi=300)
     plt.clf()
 
     return
@@ -321,13 +323,14 @@ def pvals_filter(win_size=50):
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=[10, 5], sharey=True)
     rel_p_vals_detect.plot(ax=axes[0], c='wheat', legend=False)
     rel_p_vals_no_detect.plot(ax=axes[0], c='lightgray', legend=False)
-    axes[0].set_ylabel('p-value')
-    axes[0].set_title('Water supply reliability')
+    axes[0].set_ylabel('p-value', size='x-large')
+    axes[0].set_xlabel('datetime', size='x-large')
+    axes[0].set_title('Water supply reliability', size='x-large')
 
     flood_p_vals_detect.plot(ax=axes[1], c='wheat', legend=False)
     flood_p_vals_no_detect.plot(ax=axes[1], c='lightgray', legend=False)
-    axes[1].set_title('Upstream flood volume')
-
+    axes[1].set_title('Upstream flood volume', size='x-large')
+    axes[1].set_xlabel('datetime', size='x-large')
     # plot p=0.05
     axes[0].axhline(y=0.05, color='r')
     axes[1].axhline(y=0.05, color='r')
@@ -425,8 +428,9 @@ def detect_vs_end_obj(objective, win_size=30):
     axs[1].spines['left'].set_visible(False)
     axs[1].tick_params(left=False)
     axs[0].spines['right'].set_visible(False)
-    axs[0].set_xlabel('detection year', size='large')
-    axs[0].set_ylabel(name, size='large')
+    axs[0].set_xlabel('detection year', size='xx-large')
+    # axs[0].set_title(name, size='xx-large')
+    axs[0].set_ylabel(name, size='x-large')
     boxplot['fliers'][0].set(markersize=4, mec='black')
     boxplot['boxes'][0].set(linewidth=1, color='black')
     boxplot['medians'][0].set(linewidth=1, color='black')
@@ -577,8 +581,8 @@ def plot_multi_sorted_expanding(win_size=30):
 
 
 def main():
-    # create ensemble subplots
-    plot_ensemble()
+    # # create ensemble subplots
+    # plot_ensemble()
     #
     # # plot distribution of first detection
     # plot_single_total()
@@ -587,8 +591,8 @@ def main():
     # plot_single_sorted('Rel_SOD_%')
     # plot_single_sorted('Upstream_Flood_Volume_taf')
     #
-    # # plot detection rates
-    # plot_multi_total()
+    # plot detection rates
+    plot_multi_total()
     #
     # # plot detection rate sorted by gcm/rcp/lulc in 2098
     # plot_multi_sorted()
