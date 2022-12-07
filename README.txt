@@ -1,9 +1,8 @@
-FUNCTION: Determine if modeled reservoir system performance is statistically significant compared to historical data
+Detecting climate change effects in water resources is critical for finding signals in the data upon which adaptation decisions can be triggered. To study this, we explore if changes in projected water resources are statistically significant using a nonparametric hypothesis test, the Mann Whitney U-test (MWU). We are also interested in our ability to predict when statistically significant changes occur. To do so, we train a logistic regression classifier to predict if a significant change occurs within a specified lead time.
 
-For SSJRB model outputs, use MWU test against historical to find years of significnance. A single scenario analysis would seek to find the 
-first statistically significant detection year for each scenario, while a multiple sceanrio counts detection across
-multiple models for each year. Results ares sorted by GCM/RCP choice (CMIP5 scenarios) and land use (LULC scenario). 
+For water resources projections into the next 100 years from the SSJRB model, we conduct the MWU test on the historical data vs. 30-year rolling windows on the projected data to find if and when we detect significant changes. Here, we define the single scenario analysis as finding the first statistically significant detection year for each scenario, while a multiple sceanrio would track detection rates across multiple models for each year. We sort results by choice of climate model (GCM), or emissions scenario (RCP) choice (CMIP5 scenarios) and land use (LULC scenario) to see which of these factors are detections most sensitive to. This was also explored more formally with a numeric global sensitivity analysis.
 
+Code Files:
 significance_detection_v4.py defined functions for multiple/single scenario analysis
 plot_results.py *RUN FIRST TO GET NECCESSARY FILES* defines and executes functions to plot and export results (csv) based on significance detection functions
 detection_classifier.py uses logistic regression to predict detections within lead time L years after year t*. Performance graded with true positive and true negative scores. Choices of L and t* flexible.
