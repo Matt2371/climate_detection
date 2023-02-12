@@ -5,15 +5,18 @@ from tqdm import tqdm
 from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 
-from plot_ensemble import ensemble
+from plot_ensemble import ensemble, ensemble_byrcp
 import significance_detection_v4 as sd
 
 
 ### Create figures to be used in journal article
 ## LOGISTIC REGRESSION RESULTS PLOTTED SEPERATELY
 
-## Ensemble subplots for water supply reliability (SOD) and upstream flood volume and add scatterplot for observations
+
 def plot_ensemble():
+    """Ensemble subplots for water supply reliability (SOD) and upstream
+    flood volume and add scatterplot for observations"""
+
     df_rel = ensemble('Rel_SOD_%')
     df_flood = ensemble('Upstream_Flood_Volume_taf')
     # find historical range (max/min)
@@ -70,8 +73,51 @@ def plot_ensemble():
     return
 
 
-## Plot distribution for first detection years for water supply reliability (SOD) and upstream flood volume
+def plot_rcp_objective():
+    """Plot mean objective (30-year moving averages) +/- 1SD for each RCP"""
+
+    # Get objective data, seperated by RCP
+    rel_list = ensemble_byrcp('Rel_SOD_%')
+    flood_list = ensemble_byrcp('Upstream_Flood_Volume_taf')
+
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=[10, 4])
+
+    # Plot mean water supply reliability and flooding (fill in +/-1 sd)
+    rcp_list = ['rcp26', 'rcp45', 'rcp60', 'rcp85']
+    color_list = ['blue', 'orange', 'green', 'red']
+
+    for i in range(len(rcp_list)):
+        mean_rel = rel_list[i].mean(axis=1)
+        sd_rel = rel_list[i].std(axis=1)
+        mean_flood = flood_list[i].mean(axis=1)
+        sd_flood = flood_list[i].std(axis=1)
+
+        axes[0].plot(rel_list[i].index, mean_rel, color=color_list[i], label='mean - ' + rcp_list[i])
+        axes[0].fill_between(rel_list[i].index, mean_rel - sd_rel, mean_rel + sd_rel, facecolor=color_list[i], alpha=0.1)
+
+        axes[1].plot(flood_list[i].index, mean_flood, color=color_list[i], label='mean - ' + rcp_list[i])
+        axes[1].fill_between(flood_list[i].index, mean_flood - sd_flood, mean_flood + sd_flood, facecolor=color_list[i], alpha=0.1)
+
+    # Set axis labels and title; add legend
+    axes[0].set_ylabel('reliability', size='x-large')
+    axes[0].set_xlabel('datetime', size='x-large')
+    axes[0].set_title('Water supply reliability by RCP', size='x-large')
+    axes[1].set_ylabel('flood volume (TAF)', size='x-large')
+    axes[1].set_xlabel('datetime', size='x-large')
+    axes[1].set_title('Upstream flood volume by RCP', size='x-large')
+
+    axes[0].legend(loc='lower left')
+
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig('significance_results/article_figures/objective_byrcp_plot.png', dpi=300)
+    plt.clf()
+    return
+
+
 def plot_single_total(win_size=30):
+    """Plot distribution for first detection years for water supply reliability (SOD) and upstream flood volume"""
+
     # Load first detection years from csv's
     years_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/' +
                             'less' + '_single_total_win' + str(win_size) + '.csv', index_col=0)['Year']
@@ -95,10 +141,11 @@ def plot_single_total(win_size=30):
     return
 
 
-## Plot stats of first detection years (sorted by gcm/rcp/lulc)
-# objective = 'Rel_SOD_%' or 'Upstream_Flood_Volume_taf'
-# OJECTIVES CONSOLIDATED IN POWERPOINT
 def plot_single_sorted(objective, win_size=30):
+    """Plot stats of first detection years (sorted by gcm/rcp/lulc)
+    Params: objective = 'Rel_SOD_%' or 'Upstream_Flood_Volume_taf'
+    OBJECTIVES CONSOLIDATED IN POWERPOINT"""
+
     # set alternative and figure title based on objective
     if objective == 'Rel_SOD_%':
         alt = 'less'
@@ -162,8 +209,37 @@ def plot_single_sorted(objective, win_size=30):
     return
 
 
-## Plot detection rates for water supply reliability (SOD) and upstream flood volume
+def plot_single_rcp_subplots(objective, win_size=30):
+    """Plots subplots of distributions of first detections years sorted by RCP
+    OBJECTIVES CONSOLIDATED IN POWERPOINT"""
+
+    # set alternative and figure title based on objective
+    if objective == 'Rel_SOD_%':
+        alt = 'less'
+        name = 'Water supply reliability'
+    else:
+        alt = 'greater'
+        name = 'Upstream flood volume'
+
+    # read data from csv
+    df = pd.read_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
+                     alt + '_single_byrcp_win' + str(win_size) + '.csv', index_col=0)
+
+    # plot histograms grouped by rcp
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(5, 5))
+    df.hist(bins=10, grid=False, ax=axes)
+    for ax in axes.flatten():
+        ax.set_xlabel('detection year', size='large')
+    fig.suptitle(name, size='xx-large')
+    plt.tight_layout()
+    plt.savefig('significance_results/article_figures/first_detection_by_rcp_' + objective + '.png', dpi=300)
+
+    return
+
+
 def plot_multi_total(win_size=30):
+    """Plot detection rates for water supply reliability (SOD) and upstream flood volume"""
+
     # Load p-val data (rel counts is included as a column)
     agg_all_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/' +
                               'less_pvals_win30.csv', index_col=0, parse_dates=True)
@@ -191,8 +267,9 @@ def plot_multi_total(win_size=30):
     return
 
 
-## Create histograms for detection rates by gcm/rcp/lulc at the end of simulation (2098)
 def plot_multi_sorted(win_size=30):
+    """Create histograms for detection rates by gcm/rcp/lulc at the end of simulation (2098)"""
+
     # load detection rates for water supply reliability sorted by gcm/rcp/lulc
     df_gcm_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/'
                              + 'less' + '_multi_' + 'bygcm' + '_win' +
@@ -258,8 +335,9 @@ def plot_multi_sorted(win_size=30):
     return
 
 
-# plot p-vals of 50 randomly selected scenarios
 def plot_pvals(win_size=30):
+    """plot p-vals of 50 randomly selected scenarios"""
+
     # import pvals, delete values before year 2000 (historical)
     rel_p_vals = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) +
                              '_year_MA/' + 'less' + '_pvals_win' + str(win_size) + '.csv', index_col=0,
@@ -293,8 +371,9 @@ def plot_pvals(win_size=30):
     return
 
 
-# plot p-vals of scenarios that showed a detection and did not (25 randomly selected from each)
 def pvals_filter(win_size=50):
+    """plot p-vals of scenarios that showed a detection and did not (25 randomly selected from each)"""
+
     # import pvals, delete values before year 2000 (historical)
     rel_p_vals = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) +
                              '_year_MA/' + 'less' + '_pvals_win' + str(win_size) + '.csv', index_col=0,
@@ -349,9 +428,11 @@ def pvals_filter(win_size=50):
     return
 
 
-# Single scenario: Plot first detection year against objective value (moving average) at END OF PROJECTION (2098)
-# INCLUDES DISTRIBUTION OF NO DETECT SCENAIORS' SEVERITY (BOXPLOT)
 def detect_vs_end_obj(objective, win_size=30):
+    """Single scenario: Plot first detection year against objective value (moving average) at END OF PROJECTION (2098)
+    Includes distribution of no-detect scenarios as boxplot
+    OBJECTIVES CONSOLIDATED IN POWERPOINT"""
+
     # set alternative and figure title based on objective
     if objective == 'Rel_SOD_%':
         alt = 'less'
@@ -428,9 +509,9 @@ def detect_vs_end_obj(objective, win_size=30):
     axs[1].spines['left'].set_visible(False)
     axs[1].tick_params(left=False)
     axs[0].spines['right'].set_visible(False)
-    axs[0].set_xlabel('detection year', size='xx-large')
+    axs[0].set_xlabel('detection year', size=15)
     # axs[0].set_title(name, size='xx-large')
-    axs[0].set_ylabel(name, size='x-large')
+    axs[0].set_ylabel(name + ' (end of century)', size=15)
     boxplot['fliers'][0].set(markersize=4, mec='black')
     boxplot['boxes'][0].set(linewidth=1, color='black')
     boxplot['medians'][0].set(linewidth=1, color='black')
@@ -439,6 +520,7 @@ def detect_vs_end_obj(objective, win_size=30):
     for whisker in boxplot['whiskers']:
         whisker.set(linewidth=1, color='black')
 
+    plt.tight_layout()
     plt.savefig(
         'significance_results/article_figures/' + objective + '_detect_2098obj_' + alt + '_single_'
         + 'win' + str(win_size) + '.png', dpi=300)
@@ -447,8 +529,9 @@ def detect_vs_end_obj(objective, win_size=30):
     return output_df
 
 
-# plot p-vals for expanding window MWU test (FLOOD ONLY)
 def plot_pvals_expanding():
+    """# plot p-vals for expanding window MWU test (FLOOD ONLY)"""
+
     # load p_vals
     expanding_pvals = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
                                   'expanding_window_p_vals.csv', index_col=0, parse_dates=True).drop(
@@ -472,8 +555,11 @@ def plot_pvals_expanding():
     return
 
 
-## Plot distribution for first detection years for water supply reliability (SOD) and upstream flood volume (EXPANDING)
 def plot_single_total_expanding(win_size=30):
+    """DEPRECIATED.
+    Plot distribution for first detection years for water supply reliability (SOD)
+    and upstream flood volume (EXPANDING)"""
+
     # Load first detection years from csv's
     years_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/' +
                             'less' + '_single_total_win' + str(win_size) + '.csv', index_col=0)['Year']
@@ -496,8 +582,9 @@ def plot_single_total_expanding(win_size=30):
     return
 
 
-## Plot detection rates for expanding window analysis (FLOOD ONLY)
 def plot_multi_total_expanding():
+    """DEPRECIATED
+    Plot detection rates for expanding window analysis (FLOOD ONLY)"""
     # Load p-val data (rel counts is included as a column)
     agg_all_exp = pd.read_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
                               'expanding_window_p_vals.csv', index_col=0, parse_dates=True)
@@ -518,9 +605,10 @@ def plot_multi_total_expanding():
     return
 
 
-## Create histograms for detection rates by gcm/rcp/lulc at the end of simulation (2098)
-# FLOOD = EXPANDING WINDOW
 def plot_multi_sorted_expanding(win_size=30):
+    """DEPRECIATED.
+    Create histograms for detection rates by gcm/rcp/lulc at the end of simulation (2098)
+    FLOOD = EXPANDING WINDOW"""
     # load detection rates for water supply reliability sorted by gcm/rcp/lulc
     df_gcm_rel = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) + '_year_MA/'
                              + 'less' + '_multi_' + 'bygcm' + '_win' +
@@ -584,6 +672,9 @@ def main():
     # # create ensemble subplots
     # plot_ensemble()
     #
+    # Plot mean objective (30-year moving averages) +/- 1SD for each RCP
+    plot_rcp_objective()
+    #
     # # plot distribution of first detection
     # plot_single_total()
     #
@@ -591,8 +682,13 @@ def main():
     # plot_single_sorted('Rel_SOD_%')
     # plot_single_sorted('Upstream_Flood_Volume_taf')
     #
-    # plot detection rates
-    plot_multi_total()
+
+    # # plot first detection sorted by rcp
+    # plot_single_rcp_subplots('Rel_SOD_%')
+    # plot_single_rcp_subplots('Upstream_Flood_Volume_taf')
+    #
+    # # plot detection rates
+    # plot_multi_total()
     #
     # # plot detection rate sorted by gcm/rcp/lulc in 2098
     # plot_multi_sorted()

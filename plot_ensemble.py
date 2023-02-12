@@ -20,12 +20,13 @@ lulc_names = pd.read_csv('lulc_scenario_names.csv').name.to_list()
 
 
 def ensemble(objective, win_size=30):
+    """Get dataframe with all ensemble data (rolling average)"""
     # import empty df with dates
     # df = pd.read_csv('empty/datetime.csv', index_col=0,
     #                  parse_dates=True)
     df = pd.DataFrame()
 
-    for gcm in tqdm(gcm_list, desc= 'Reading data'):
+    for gcm in tqdm(gcm_list, desc='Reading data'):
         for rcp in rcp_list:
             for lulc in lulc_names:
                 try:
@@ -39,6 +40,39 @@ def ensemble(objective, win_size=30):
     df['mean'] = df.mean(axis=1)
 
     return df
+
+
+def ensemble_byrcp(objective, win_size=30):
+    """Get dataframe with all ensemble data (rolling average), seperated by RCP
+    Returns a list of dataframes: [rcp26, rcp45, rcp60, rcp85]"""
+    df_rcp26 = pd.DataFrame()
+    df_rcp45 = pd.DataFrame()
+    df_rcp60 = pd.DataFrame()
+    df_rcp85 = pd.DataFrame()
+
+    # dict to store all built dataframes
+    df_dict = {'rcp26': df_rcp26, 'rcp45': df_rcp45, 'rcp60': df_rcp60, 'rcp85': df_rcp85}
+
+    for gcm in tqdm(gcm_list, desc='Reading data'):
+        for rcp in rcp_list:
+            for lulc in lulc_names:
+                try:
+                    # read all scenarios into data_df, plot rolling average
+                    scenario = gcm + '_' + rcp + '_r1i1p1'
+                    data_df = pd.read_csv('data/obj_' + scenario + '_' + lulc + '.csv.zip', index_col=0,
+                                          parse_dates=True)
+
+                    # update dataframe in dict
+                    df = df_dict[rcp]
+                    df[gcm + '_' + rcp + '_' + lulc] = data_df[objective].rolling(win_size).mean()
+                    df_dict[rcp] = df
+
+                except FileNotFoundError:
+                    pass
+    # return a list of resulting df
+    df_list = [df_dict['rcp26'], df_dict['rcp45'], df_dict['rcp60'], df_dict['rcp85']]
+
+    return df_list
 
 
 def main():
