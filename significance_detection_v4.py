@@ -16,13 +16,21 @@ import os.path
 ## win_size: moving average window size applied, int
 ## alt = ['two-sided', 'less', 'greater']
 
-# take rolling averages, run statistical significance tests against historical
-# Parameters: gcm/rcp (from cmip5),
-# lulc(land use), objective (['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf', 'Delta_Peak_Inflow_cfs']),
-# parametric (t-test or MWU), alt ('greater/less/two-sided' hypothesis compared to historical), win_size(size of MA
-# window)
-# returns: dataframe with original data AND p-values
+
 def rolling_significance(gcm, rcp, lulc, objective, parametric=False, alt='two-sided', win_size=30):
+    """
+    take rolling averages, run statistical significance tests against historical
+    Parameters: 
+    gcm/rcp (from cmip5),
+    lulc(land use), 
+    objective (['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf', 'Delta_Peak_Inflow_cfs']),
+    parametric (t-test or MWU), 
+    alt ('greater/less/two-sided' hypothesis compared to historical), 
+    win_size(size of MA window)
+    
+    returns: dataframe with original data AND p-values
+    """
+
     # load dataframe and isolate objective
     # "scenario" stores cmip5 name
     scenario = gcm + '_' + rcp + '_r1i1p1'
@@ -66,9 +74,13 @@ rcp_list = ['rcp26', 'rcp45', 'rcp60', 'rcp85']
 lulc_names = pd.read_csv('lulc_scenario_names.csv').name.to_list()
 
 
-# returns tables with p values aggregated for every scenario (gcm/rcp/lulc combination)
-# parameters: same as definitions as SHARED PARAMETERS
+
 def export_agg(objective, parametric=False, alt='two-sided', win_size=30):
+    '''
+    returns tables with p values aggregated for every scenario (gcm/rcp/lulc combination)
+    parameters: same as definitions as SHARED PARAMETERS
+    '''
+
     # import aggregate csv's (empty, dates only)
     agg_all = pd.read_csv('empty/datetime.csv', index_col=0,
                           parse_dates=True)
@@ -88,10 +100,14 @@ def export_agg(objective, parametric=False, alt='two-sided', win_size=30):
     return agg_all
 
 
-# for aggregate df's (see fun below below), add "count" column that keeps tract of p<0.05 for each datetime (multiple
-# scenario)
-# returns: inputted dataframe with added "count" column
+
 def p_val_count(df):
+    '''
+    for aggregate df's (see fun below below), add "count" column that keeps tract of p<0.05 for each datetime (multiple
+    scenario)
+    returns: inputted dataframe with added "count" column
+    '''
+
     # iterate over df rows. "row" stores (index (date), data from each columns) as named tuple
     for row in df.itertuples():
         # p < 0.05 counter, reset counter for every new row
@@ -107,9 +123,13 @@ def p_val_count(df):
     return df
 
 
-# returns: year of first significance for each model scenario (single scenario)
-# parameter: input df with p values
+
 def first_significance(df):
+    '''
+    returns: year of first significance for each model scenario (single scenario)
+    parameter: input df with p values
+    '''
+
     # create list of columns (names of each scenario)
     columns = list(df)
 
@@ -150,10 +170,14 @@ def first_significance(df):
     return output
 
 
-# conduct MWU test on expanding window of FLODO VOLUME (will this lead to more montonic detection?)
-# min periods is the minimum number of units before calculations of expanding window begins
+
 def expanding_significance(gcm, rcp, lulc, objective='Upstream_Flood_Volume_taf', alt='greater',
                            min_periods=30):
+    '''
+    conduct MWU test on expanding window of FLODO VOLUME (will this lead to more montonic detection?)
+    min periods is the minimum number of units before calculations of expanding window begins
+    '''
+
     # load scenario
     scenario = gcm + '_' + rcp + '_r1i1p1'
     df = pd.read_csv('data/obj_' + scenario + '_' + lulc + '.csv.zip', index_col=0, parse_dates=True)
@@ -180,9 +204,13 @@ def expanding_significance(gcm, rcp, lulc, objective='Upstream_Flood_Volume_taf'
     return df
 
 
-# get p-vals for expanding flooding MWU tests
-# parameters: same as definitions as SHARED PARAMETERS
+
 def expanding_export_agg(objective='Upstream_Flood_Volume_taf'):
+    '''
+    get p-vals for expanding flooding MWU tests
+    parameters: same as definitions as SHARED PARAMETERS
+    '''
+
     # import aggregate csv's (empty, dates only)
     index = pd.read_csv('empty/datetime.csv', index_col=0,
                               parse_dates=True).index
@@ -201,3 +229,4 @@ def expanding_export_agg(objective='Upstream_Flood_Volume_taf'):
     # build export dataframe
     exp_agg_all = pd.DataFrame(data, index=index)
     return exp_agg_all
+

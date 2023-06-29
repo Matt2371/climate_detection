@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
+from sklearn import metrics
 from tqdm import tqdm
 
 
@@ -85,7 +86,7 @@ def build_data(objective, t_star=2020, L=30):
     return export_df
 
 
-# Trains logistic regression classifier. Compare results to dummy classifier
+# Trains logistic regression classifier.
 # X= df of features, y= array of targets
 def logistic_regrssion(X, y):
     # randomly split up data for training and testing
@@ -97,15 +98,10 @@ def logistic_regrssion(X, y):
     LG_predictions = LG_clf.predict(X_test)
     LG_coeff = LG_clf.coef_
 
-    # create instance of dummy classifier (uniform distribution - random guesses)
-    dummy_clf = DummyClassifier(strategy='uniform')
-    dummy_clf.fit(X_train, y_train)
-    dummy_predictions = dummy_clf.predict(X_test)
-
-    return LG_predictions, dummy_predictions, y_test, LG_coeff
+    return LG_predictions, y_test, LG_coeff, LG_clf, X_test
 
 
-# calculates true positive, true negative rate
+# Calculates true positive, true negative rate
 # y_test are array of true values in test set
 def tptns(predictions, y_test):
     y_test = y_test.values
@@ -126,6 +122,18 @@ def tptns(predictions, y_test):
     # neg_test = len(y_test[np.where(y_test == 0)])
 
     return TP_rate, TN_rate
+
+
+# Calculates AUC scores
+def auc(model, X_test, y_test):
+    # Get prediction probabilities
+    pred_prob = model.predict_proba(X_test)[:, 1]
+
+    # Get auc score (area under ROC curve)
+    y_test = y_test.values
+    auc = metrics.roc_auc_score(y_test, pred_prob)
+
+    return auc
 
 
 # Plot coefficients for mean/standard deviation features for fixed t*
@@ -189,6 +197,8 @@ def heatmap(objective):
     # TP/TN scores for logistic regression
     LG_TP_matrix = np.zeros((len(L_array), len(t_star_array)))
     LG_TN_matrix = np.zeros((len(L_array), len(t_star_array)))
+    # AUC scores for logistic regression
+    AUC_matrix = np.zeros((len(L_array), len(t_star_array)))
 
     # run models
     for i in range(len(L_array)):
@@ -200,16 +210,19 @@ def heatmap(objective):
             export_df = build_data(objective, t_star=t_star, L=L)
             X = export_df.drop(['y'], axis=1)
             y = export_df['y']
-            LG_predictions, dummy_predictions, y_test, LG_coeff = logistic_regrssion(X, y)
+            LG_predictions, y_test, LG_coeff, model, X_test = logistic_regrssion(X, y)
 
             # get TP/TN scores for Logistic regression
             LG_TP = tptns(predictions=LG_predictions, y_test=y_test)[0]
             LG_TN = tptns(predictions=LG_predictions, y_test=y_test)[1]
 
+            # get auc scores
+            auc_score = auc(model=model, X_test=X_test, y_test=y_test)
+
             m_matrix[i, j] = len(y_test)
             LG_TP_matrix[i, j] = LG_TP
             LG_TN_matrix[i, j] = LG_TN
-
+            AUC_matrix[i, j] = auc_score
 
     ##  draw heatmaps
     ##  heatmap of test set sample size
@@ -254,7 +267,8 @@ def heatmap(objective):
                            ha="center", va="center", color="w", size='large')
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_positive.png', dpi=300)
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_positive.png',
+                dpi=300)
     plt.clf()
 
     ## heatmap of TN rates for logistic regression
@@ -277,7 +291,31 @@ def heatmap(objective):
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_negative.png', dpi=300)
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_negative.png',
+                dpi=300)
+    plt.clf()
+
+    ## heatmap of AUC scores for logistic regression
+    fig, ax = plt.subplots()
+    ax.set_xlabel('$t^*$', size='x-large')
+    ax.set_ylabel('lead time, L (years)', size='x-large')
+
+    im = ax.imshow(AUC_matrix, vmin=0, vmax=1)
+    # Show all ticks and label them with the respective list entries
+    ax.set_xticks(np.arange(len(t_star_array)))
+    ax.set_xticklabels([str(x) for x in t_star_array.tolist()], size='large')
+    ax.set_yticklabels([str(x) for x in L_array.tolist()], size='large')
+    ax.set_yticks(np.arange(len(L_array)))
+    ax.set_title('Logistic regression AUC scores', size='x-large')
+    # annotate
+    for i in range(len(L_array)):
+        for j in range(len(t_star_array)):
+            text = ax.text(j, i, round(AUC_matrix[i, j], 2),
+                           ha="center", va="center", color="w", size='large')
+    plt.colorbar(im)
+    plt.tight_layout()
+    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_auc_scores.png',
+                dpi=300)
     plt.clf()
 
     return

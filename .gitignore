@@ -2,3 +2,6 @@ data/
 archive/
 drafting/
 scenario_data/
+
+scrap.py
+playground.ipynb

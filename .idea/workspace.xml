@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="559e8d4f-26db-4e56-80de-a6468d6d21cc" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/article_figs.py" beforeDir="false" afterPath="$PROJECT_DIR$/article_figs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/plot_ensemble.py" beforeDir="false" afterPath="$PROJECT_DIR$/plot_ensemble.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/Rel_SOD_%_detect_2098obj_less_single_win30.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/Rel_SOD_%_detect_2098obj_less_single_win30.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/Upstream_Flood_Volume_taf_detect_2098obj_greater_single_win30.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/Upstream_Flood_Volume_taf_detect_2098obj_greater_single_win30.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/detect_severity.png" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/detect_severity.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/significance_results/article_figures/figures.pptx" beforeDir="false" afterPath="$PROJECT_DIR$/significance_results/article_figures/figures.pptx" afterDir="false" />
-    </list>
+    <list default="true" id="559e8d4f-26db-4e56-80de-a6468d6d21cc" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -217,6 +209,7 @@
       <workItem from="1675529577413" duration="925000" />
       <workItem from="1675633483283" duration="3393000" />
       <workItem from="1676235466088" duration="6139000" />
+      <workItem from="1676319599436" duration="84000" />
     </task>
     <servers />
   </component>
