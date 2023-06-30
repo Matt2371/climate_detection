@@ -2,6 +2,7 @@ data/
 archive/
 drafting/
 scenario_data/
+significance_results/modified_mann_kendall
 
 scrap.py
 playground.ipynb
