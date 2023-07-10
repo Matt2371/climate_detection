@@ -24,32 +24,45 @@ rcp_list = ['rcp26', 'rcp45', 'rcp60', 'rcp85']
 lulc_names = pd.read_csv('lulc_scenario_names.csv').name.to_list()
 
 
-## Plot total relative counts (multiple scenario) per year, save all p_vals as csv
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO ADD COUNTS (sd.p_val_count(df))
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_multi_total(agg_all, objective, alt, win_size):
+def plot_multi_total(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot total relative counts (multiple scenario) per year
+    and saves all p_vals as csv
+    Parameters:
+    agg_all = df of all p_vals (from significance_detection.py, export_agg()). NEED TO ADD COUNTS (sd.p_val_count(df))
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size, pre_whitening)
+    """
+
     ## Get p-vals, add counts
     # agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
     agg_all['rel_count'] = agg_all['count'] / (len(list(agg_all)) - 1)
 
+    if pre_whitening:
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_pvals_win{str(win_size)}_pw.csv'
+        filenmae_fig = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_total_win{str(win_size)}_pw.png'
+    else:
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_pvals_win{str(win_size)}.csv'
+        filenmae_fig = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_total_win{str(win_size)}.png'
+
     # Plot total relative counts, save agg_all df
     agg_all.loc['2000-10-1':'2098-10-1', 'rel_count'].plot()
     plt.ylabel('relative significance counts')
-    plt.savefig('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                alt + '_multi_total_win' + str(win_size) + '.png')
+    plt.savefig(filenmae_fig)
     plt.clf()
-    agg_all.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                   alt + '_pvals_win' + str(win_size) + '.csv')
+
+    # Save results to csv
+    agg_all.to_csv(filename_csv)
 
     return
 
 
-## Plot total relative counts (multiple scenario) separated by rcp, per year
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). DOES NOT MATTER IF COUNTS ARE NOT ADDED
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_multi_rcp(agg_all, objective, alt, win_size):
-    ## Get p-vals
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+def plot_multi_rcp(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot total relative counts (multiple scenario, fraction of all scenarios with detection) separated by rcp, per year
+    Paramters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg()). DOES NOT MATTER IF COUNTS ARE NOT ADDED
+    *make sure agg_all is consistent with other parameters (objective, alt, win_size)
+    """
 
     ## Separate by RCP
     # Add empty df with dates to add counts to, sorted by rcp
@@ -69,25 +82,34 @@ def plot_multi_rcp(agg_all, objective, alt, win_size):
         temp = sd.p_val_count(temp)
         counts_rcp[rcp + '_rel_counts'] = temp['count'] / (len(list(temp)) - 1)
 
-    ## export results
+    if pre_whitening:
+        filename_fig = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_byrcp_win{str(win_size)}_pw.png'
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_byrcp_win{str(win_size)}_pw.csv'
+    else:
+        filename_fig = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_byrcp_win{str(win_size)}.png'
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_byrcp_win{str(win_size)}.csv'
+    
+    # plot
     counts_rcp['2000-10-1':'2098-10-1'].plot()
     plt.ylabel('relative significance counts')
     plt.legend(rcp_list)
-    plt.savefig('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                alt + '_multi_byrcp_win' + str(win_size) + '.png')
+    plt.savefig(filename_fig)
     plt.clf()
-    counts_rcp.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                      alt + '_multi_byrcp_win' + str(win_size) + '.csv')
+
+    # export results as csv
+    counts_rcp.to_csv(filename_csv)
 
     return
 
 
-## Plot total relative counts (multiple scenario) separated by gcm, per year
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). DOES NOT MATTER IF COUNTS ARE NOT ADDED
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_multi_gcm(agg_all, objective, alt, win_size):
-    ## Get p-vals
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+
+def plot_multi_gcm(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot total relative counts (multiple scenario) separated by gcm, per year
+    Parameters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg()). DOES NOT MATTER IF COUNTS ARE NOT ADDED
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size)
+    """
 
     ## Separate by GCM
     # Add empty df with dates to add counts to, sorted by gcm
@@ -107,19 +129,25 @@ def plot_multi_gcm(agg_all, objective, alt, win_size):
         temp = sd.p_val_count(temp)
         counts_gcm[gcm + '_rel_counts'] = temp['count'] / (len(list(temp)) - 1)
 
-    ## export results
-    counts_gcm.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                      alt + '_multi_bygcm_win' + str(win_size) + '.csv')
+    ## export results as csv
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_bygcm_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_bygcm_win{str(win_size)}.csv'
+
+    counts_gcm.to_csv(filename)
 
     return
 
 
-## Plot total relative counts (multiple scenario) separated by lulc, per year
-# agg_all=df of all p_vals (from significance_detection.py, export_agg())
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_multi_lulc(agg_all, objective, alt, win_size):
-    ## Get p-vals
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+
+def plot_multi_lulc(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot total relative counts (multiple scenario) separated by lulc, per year
+    Parameters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg())
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size)
+    """
 
     ## Separate by lulc
     # Add empty df with dates to add counts to, sorted by lulc
@@ -139,39 +167,52 @@ def plot_multi_lulc(agg_all, objective, alt, win_size):
         temp = sd.p_val_count(temp)
         counts_lulc[lulc + '_rel_counts'] = temp['count'] / (len(list(temp)) - 1)
 
-    # export results
-    counts_lulc.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                       alt + '_multi_bylulc_win' + str(win_size) + '.csv')
+    # export results as csv
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_bylulc_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_multi_bylulc_win{str(win_size)}.csv'
+
+    counts_lulc.to_csv(filename)
 
     return
 
 
-## plot distribution of years of first significance (single scenario), export years as csv
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_single_total(agg_all, objective, alt, win_size):
-    ## Get p-vals
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+def plot_single_total(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot distribution of years of first significance (single scenario), export years as csv
+    Parameters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size, pre_whitening)
+    """
 
     years = sd.first_significance(agg_all)
     years.plot.hist(bins=20, legend=False)
     plt.xlabel('detection year')
 
     ## export results
-    plt.savefig('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                alt + '_single_hist_win' + str(win_size) + '.png')
+    if pre_whitening:
+        filename_fig = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_hist_win{str(win_size)}_pw.png'
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_total_win{str(win_size)}_pw.csv'
+    else:
+        filename_fig = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_hist_win{str(win_size)}.png'
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_total_win{str(win_size)}.csv'
+
+
+    plt.savefig(filename_fig)
     plt.clf()
-    years.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                 alt + '_single_total_win' + str(win_size) + '.csv')
+
+    years.to_csv(filename_csv)
     return
 
 
-## plot distribution of years of first significance (single scenario), sorted by rcp
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_single_rcp(agg_all, objective, alt, win_size):
-    ## Get p-vals
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+def plot_single_rcp(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot distribution of years of first significance (single scenario), sorted by rcp
+    Parameters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size, pre_whitening)
+    """
 
     ## Separate by RCP
     # Add empty df to add years of first detection, sorted by rcp
@@ -194,28 +235,40 @@ def plot_single_rcp(agg_all, objective, alt, win_size):
         years_rcp[rcp] = years_temp['Year']
 
     ## export/plot results
+    if pre_whitening:
+        filename_fig1 = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_hist_byrcp_win{str(win_size)}_pw.png'
+        filename_fig2 = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_subplots_byrcp_win{str(win_size)}_pw.png'
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_byrcp_win{str(win_size)}_pw.csv'
+    else:
+        filename_fig1 = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_hist_byrcp_win{str(win_size)}.png'
+        filename_fig2 = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_subplots_byrcp_win{str(win_size)}.png'
+        filename_csv = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_byrcp_win{str(win_size)}.csv'
+
     # plot stacked histogram
     years_rcp.plot.hist(stacked=True, bins=20)
     plt.xlabel('Year')
-    plt.savefig('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                alt + '_single_hist_byrcp_win' + str(win_size) + '.png')
+    plt.savefig(filename_fig1)
     plt.clf()
+
     # plot subplots sorted by rcp
     years_rcp.hist(bins=10, grid=False)
-    plt.savefig('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                alt + '_single_subplots_byrcp_win' + str(win_size) + '.png')
+    plt.savefig(filename_fig2)
     plt.clf()
-    years_rcp.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                     alt + '_single_byrcp_win' + str(win_size) + '.csv')
+
+    # save results as csv
+    years_rcp.to_csv(filename_csv)
+
     return
 
 
-## plot distribution of years of first significance (single scenario), sorted by gcm
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_single_gcm(agg_all, objective, alt, win_size):
-    ## Get all p-vals (for all scenarios)
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+
+def plot_single_gcm(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot distribution of years of first significance (single scenario), sorted by gcm
+    Parameters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size, pre_whitening)
+    """
 
     ## Separate by GCM
     # Add empty df to add years of first detection, sorted by gcm
@@ -238,17 +291,24 @@ def plot_single_gcm(agg_all, objective, alt, win_size):
         years_gcm[gcm] = years_temp['Year']
 
     ## export results
-    years_gcm.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                     alt + '_single_bygcm_win' + str(win_size) + '.csv')
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_bygcm_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_bygcm_win{str(win_size)}.csv'
+
+    years_gcm.to_csv(filename)
+
     return
 
 
-## plot distribution of years of first significance (single scenario), sorted by lulc
-# agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
-# make sure agg_all is consistent with other parameters (objective, alt, win_size)
-def plot_single_lulc(agg_all, objective, alt, win_size):
-    ## Get all p-vals (for all scenarios)
-    # agg_all = sd.export_agg(objective, alt=alt, win_size=win_size)
+
+def plot_single_lulc(agg_all, objective, alt, win_size, pre_whitening):
+    """
+    Plot distribution of years of first significance (single scenario), sorted by lulc
+    Parameters:
+    agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
+    * make sure agg_all is consistent with other parameters (objective, alt, win_size, pre_whitening)
+    """
 
     ## Separate by LULC
     # Add empty df to add years of first detection, sorted by lulc
@@ -270,13 +330,17 @@ def plot_single_lulc(agg_all, objective, alt, win_size):
         # add sample of years to df
         years_lulc[lulc] = years_temp['Year']
 
-    ## plot/export results
-    years_lulc.to_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' +
-                      alt + '_single_bylulc_win' + str(win_size) + '.csv')
+    ## Export results as csv
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_bylulc_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_bylulc_win{str(win_size)}.csv'
+
+    years_lulc.to_csv(filename)
     return
 
 
-### ANALYSIS FOR EXPANDING WINDOW FLOODS
+### BELOW FUNCTIONS ARE FOR ANALYSIS FOR EXPANDING WINDOW FLOODS
 ## plot distribution of years of first significance (single scenario), export years as csv
 # agg_all=df of all p_vals (from significance_detection.py, export_agg()). NEED TO REMOVE COUNTS (MODELS ONLY)
 # FOR EXPANDING WINDOW ANALYSIS/FLOOD VOLUME ONLY
@@ -472,65 +536,66 @@ def plot_multi_lulc_expanding(agg_all):
 
 
 def main():
-    # list of objectives
+    # list of objectives to loop over
     obj_list = ['Rel_NOD_%', 'Rel_SOD_%', 'Upstream_Flood_Volume_taf', 'Delta_Peak_Inflow_cfs']
     # set window size
     win_size = 30
 
     # export results for each objective
     for objective in tqdm(obj_list, desc='Exporting Results'):
-        if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
-            alt = 'less'
-            # get p-vals and counts
-            agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
+        for pre_whitening in [True, False]:
+            if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
+                alt = 'less'
+                # get p-vals and counts
+                agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening))
 
-            plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+                plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
 
-            # delete count and rel_count columns for single scenario analysis
-            agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
+                # delete count and rel_count columns for single scenario analysis
+                agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
 
-            plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+                plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
 
-        if objective == 'Upstream_Flood_Volume_taf':
-            alt = 'greater'
-            agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size))
+            if objective == 'Upstream_Flood_Volume_taf':
+                alt = 'greater'
+                agg_all = sd.p_val_count(sd.export_agg(objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening))
 
-            plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+                plot_multi_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_multi_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_multi_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_multi_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
 
-            # delete count and rel_count columns for single scenario analysis
-            agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
+                # delete count and rel_count columns for single scenario analysis
+                agg_all = agg_all.drop(['count', 'rel_count'], axis='columns')
 
-            plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
-            plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size)
+                plot_single_total(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_single_rcp(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_single_gcm(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
+                plot_single_lulc(agg_all=agg_all, objective=objective, alt=alt, win_size=win_size, pre_whitening=pre_whitening)
 
-    ## FOR EXPANDING WINDOW ANALYSIS/FLOOD ONLY
-    # export expanding window p-values for flooding (delete p-vals before year 2000)
-    exp_agg_all = sd.p_val_count(sd.expanding_export_agg())
-    exp_agg_all['rel_count'] = exp_agg_all['count'] / (len(list(exp_agg_all)) - 1)
-    exp_agg_all.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
-                       'expanding_window_p_vals.csv')
-    plot_multi_rcp_expanding(agg_all=exp_agg_all)
-    plot_multi_gcm_expanding(agg_all=exp_agg_all)
-    plot_multi_lulc_expanding(agg_all=exp_agg_all)
+    # ## FOR EXPANDING WINDOW ANALYSIS/FLOOD ONLY
+    # # export expanding window p-values for flooding (delete p-vals before year 2000)
+    # exp_agg_all = sd.p_val_count(sd.expanding_export_agg())
+    # exp_agg_all['rel_count'] = exp_agg_all['count'] / (len(list(exp_agg_all)) - 1)
+    # exp_agg_all.to_csv('significance_results/nonparametric/Upstream_Flood_Volume_taf/expanding_window/'
+    #                    'expanding_window_p_vals.csv')
+    # plot_multi_rcp_expanding(agg_all=exp_agg_all)
+    # plot_multi_gcm_expanding(agg_all=exp_agg_all)
+    # plot_multi_lulc_expanding(agg_all=exp_agg_all)
 
-    # delete count and rel_count columns for single scenario analysis
-    exp_agg_all = exp_agg_all.drop(['count', 'rel_count'], axis='columns')
+    # # delete count and rel_count columns for single scenario analysis
+    # exp_agg_all = exp_agg_all.drop(['count', 'rel_count'], axis='columns')
 
-    plot_single_total_expanding(agg_all=exp_agg_all)
-    plot_single_rcp_expanding(agg_all=exp_agg_all)
-    plot_single_gcm_expanding(agg_all=exp_agg_all)
-    plot_single_lulc_expanding(agg_all=exp_agg_all)
+    # plot_single_total_expanding(agg_all=exp_agg_all)
+    # plot_single_rcp_expanding(agg_all=exp_agg_all)
+    # plot_single_gcm_expanding(agg_all=exp_agg_all)
+    # plot_single_lulc_expanding(agg_all=exp_agg_all)
 
     return
 

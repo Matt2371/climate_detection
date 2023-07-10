@@ -54,7 +54,7 @@ def rolling_significance(gcm, rcp, lulc, objective, parametric=False, alt='two-s
     # load dataframe and isolate objective
     # "scenario" stores cmip5 name
     scenario = gcm + '_' + rcp + '_r1i1p1'
-    df = pd.read_csv('data/obj_' + scenario + '_' + lulc + '.csv.zip', index_col=0, parse_dates=True)
+    df = pd.read_csv(f'data/obj_{scenario}_{lulc}.csv.zip', index_col=0, parse_dates=True)
     df = df[[objective]]
 
     # remove lag-1 autocorrelation if pre_whitening is True
@@ -100,7 +100,7 @@ lulc_names = pd.read_csv('lulc_scenario_names.csv').name.to_list()
 
 
 
-def export_agg(objective, parametric=False, alt='two-sided', win_size=30):
+def export_agg(objective, parametric=False, alt='two-sided', win_size=30, pre_whitening=False):
     '''
     returns tables with p values aggregated for every scenario (gcm/rcp/lulc combination)
     parameters: same as definitions as SHARED PARAMETERS
@@ -109,18 +109,31 @@ def export_agg(objective, parametric=False, alt='two-sided', win_size=30):
     # import aggregate csv's (empty, dates only)
     agg_all = pd.read_csv('empty/datetime.csv', index_col=0,
                           parse_dates=True)
+    # list of scenarios (gcm/rcp/lulc) combinations that exist
+    scenarios_exist_ls = []
 
-    # conduct rolling significance for all gcm/rcp combinations. aggregate results(p-vals) into df's
-    for gcm in tqdm(gcm_list, desc='Getting p-vals'):
+    ## conduct rolling significance for all gcm/rcp combinations. aggregate results(p-vals) into df's
+    # find which scenarios exist
+    for gcm in gcm_list:
         for rcp in rcp_list:
             for lulc in lulc_names:
-                try:
-                    p_vals = rolling_significance(gcm, rcp, lulc, objective, parametric, alt, win_size)[
-                        objective + '_p-value']
-                    agg_all[gcm + '_' + rcp + '_' + lulc] = p_vals
 
-                except FileNotFoundError:
-                    pass
+                file = f'data/obj_{gcm}_{rcp}_r1i1p1_{lulc}.csv.zip'
+                if os.path.isfile(file):
+                    scenarios_exist_ls.append((gcm, rcp, lulc))
+    
+                # try:
+                #     p_vals = rolling_significance(gcm, rcp, lulc, objective, parametric, alt, win_size, pre_whitening)[
+                #         objective + '_p-value'].values
+                #     agg_all[gcm + '_' + rcp + '_' + lulc] = p_vals
+
+                # except FileNotFoundError:
+                #     pass
+    
+    # conduct tests and concat results into output df (agg_all)
+    agg_all = pd.concat([rolling_significance(gcm, rcp, lulc, objective, parametric, alt, win_size, pre_whitening)[
+                        objective + '_p-value'].rename(f'{gcm}_{rcp}_{lulc}') for gcm, rcp, lulc in scenarios_exist_ls],
+                        axis=1)
 
     return agg_all
 
