@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import scipy.stats as st
+from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.tsa.stattools import acf
 from tqdm import tqdm
 import os.path
 
@@ -16,8 +18,25 @@ import os.path
 ## win_size: moving average window size applied, int
 ## alt = ['two-sided', 'less', 'greater']
 
+def remove_lag1(X):
+  """
+  Remove lag-1 autocorrelation using pre-whitening method
+  X - numpy array - input sequence
+  Returns: pre-whitened sequence
+  """
+  
+  # Estimate lag1 autocorrelation
+  rho1 = acf(X)[1]
+  
+  # Apply pre-whitening using estimated lag-1 autocorrelation
+  Y = np.zeros(len(X))
+  for i in range(1, len(X)):
+    Y[i] = X[i] - rho1*X[i-1]
 
-def rolling_significance(gcm, rcp, lulc, objective, parametric=False, alt='two-sided', win_size=30):
+  return Y
+
+
+def rolling_significance(gcm, rcp, lulc, objective, parametric=False, alt='two-sided', win_size=30, pre_whitening=False):
     """
     take rolling averages, run statistical significance tests against historical
     Parameters: 
@@ -27,6 +46,7 @@ def rolling_significance(gcm, rcp, lulc, objective, parametric=False, alt='two-s
     parametric (t-test or MWU), 
     alt ('greater/less/two-sided' hypothesis compared to historical), 
     win_size(size of MA window)
+    pre_whitening (boolean, whether or not to apply pre-whitening method to remove lag-1 autocorrelation)
     
     returns: dataframe with original data AND p-values
     """
@@ -37,6 +57,11 @@ def rolling_significance(gcm, rcp, lulc, objective, parametric=False, alt='two-s
     df = pd.read_csv('data/obj_' + scenario + '_' + lulc + '.csv.zip', index_col=0, parse_dates=True)
     df = df[[objective]]
 
+    # remove lag-1 autocorrelation if pre_whitening is True
+    if pre_whitening:
+        values = remove_lag1(df.values.flatten())
+        df[objective] = values
+    
     # set historical df's
     his_df = df['1951-10-01':'2000-10-01'].copy()
     # set projection df based on window size
@@ -103,7 +128,7 @@ def export_agg(objective, parametric=False, alt='two-sided', win_size=30):
 
 def p_val_count(df):
     '''
-    for aggregate df's (see fun below below), add "count" column that keeps tract of p<0.05 for each datetime (multiple
+    for aggregate df's (see function above), add "count" column that keeps tract of p<0.05 for each datetime (multiple
     scenario)
     returns: inputted dataframe with added "count" column
     '''
