@@ -372,7 +372,7 @@ def plot_pvals(win_size=30):
 
 
 def pvals_filter(win_size=50):
-    """plot p-vals of scenarios that showed a detection and did not (25 randomly selected from each)"""
+    """plot p-vals of scenarios. distinguish between scenarios that showed a detection and did not (25 randomly selected from each)"""
 
     # import pvals, delete values before year 2000 (historical)
     rel_p_vals = pd.read_csv('significance_results/nonparametric/' + 'Rel_SOD_%' + '/' + str(win_size) +

@@ -5,6 +5,10 @@ import scipy.stats as st
 import significance_detection_v4 as sd
 from tqdm import tqdm
 
+# supress warnings
+import warnings
+warnings.filterwarnings('ignore')
+
 ### Exports data/results from analysis functions defined in significance_detection_v4.py (sd)
 
 ## Shared parameters:
