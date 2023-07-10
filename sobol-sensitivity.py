@@ -17,8 +17,10 @@ import pandas as pd
 ## win_size: moving average window size applied, int
 ## alt = ['two-sided', 'less', 'greater']
 
-## Sobol sensitivity analysis for first detection years, parameters consistent with plot_csv.py and above
-def sobol_detection(objective, alt, win_size):
+def sobol_detection(objective, alt, win_size, pre_whitening):
+    """
+    Sobol sensitivity analysis for first detection years, parameters consistent with plot_csv.py and above
+    """
     problem = {
         'num_vars': 3,
         'names': ['rcp', 'gcm', 'lulc'],
@@ -39,9 +41,16 @@ def sobol_detection(objective, alt, win_size):
 
     # initiate list of objective values (eventually converted to numpy vector)
     Y_list = []
+
+
     # import first detection years
-    data = pd.read_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' + alt +
-                       '_single_total_win' + str(win_size) + '.csv', index_col='Model')
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_total_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_total_win{str(win_size)}.csv'
+
+    data = pd.read_csv(filename, index_col='Model')
+
     # take those three values and find the detection year of interest, save in vector Y
     for scenario in X:
         rcp_number = scenario[0]
@@ -75,12 +84,14 @@ def sobol_detection(objective, alt, win_size):
 
     # convert results to df and save
     total_Si, first_Si, second_Si = Si.to_df()
-    total_Si.to_csv('significance_results/nonparametric/' + objective + '/additional_materials/sobol/' +
-                    'sobol_ST_' + alt + '_single_win' + str(win_size) + '.csv')
-    first_Si.to_csv('significance_results/nonparametric/' + objective + '/additional_materials/sobol/' +
-                    'sobol_S1_' + alt + '_single_win' + str(win_size) + '.csv')
-    second_Si.to_csv('significance_results/nonparametric/' + objective + '/additional_materials/sobol/' +
-                     'sobol_S2_' + alt + '_single_win' + str(win_size) + '.csv')
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/sobol_pw/'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/sobol/'
+
+    total_Si.to_csv(save_dir + 'sobol_ST_' + alt + '_single_win' + str(win_size) + '.csv')
+    first_Si.to_csv(save_dir + 'sobol_S1_' + alt + '_single_win' + str(win_size) + '.csv')
+    second_Si.to_csv(save_dir + 'sobol_S2_' + alt + '_single_win' + str(win_size) + '.csv')
 
     return Si
 
@@ -128,13 +139,17 @@ def scenario_nonexist():
 
 ## Get no detection scenarios
 # NEED TO RUN scenario_nonexist() first
-def scenario_no_detect(objective, alt, win_size):
+def scenario_no_detect(objective, alt, win_size, pre_whitening):
     # initiate list of scenarios that didn't detect, also for gcm/rcp only (cmip5 scenario)
     no_detect_scenarios = []
 
     # import total single detections from results
-    df = pd.read_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' + alt +
-                     '_single_total_win' + str(win_size) + '.csv', index_col=0)
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_total_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_total_win{str(win_size)}.csv'
+
+    df = pd.read_csv(filename, index_col=0)
 
     # iterate over detection years, row stores index, 'model' (scenario name), 'Year' (detection year)
     for row in df.itertuples():
@@ -147,8 +162,12 @@ def scenario_no_detect(objective, alt, win_size):
     data = {'Model': no_detect_scenarios}
     output = pd.DataFrame(data)
     # Save results
-    output.to_csv('significance_results/nonparametric/' + objective + '/' + 'additional_materials/' +
-                  'no_detect_scenarios_' + alt + '_single_win' + str(win_size) + '.csv')
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/no_detect_scenarios_{alt}_single_win{str(win_size)}_pw.csv'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/no_detect_scenarios_{alt}_single_win{str(win_size)}.csv'
+
+    output.to_csv(save_dir)
 
     return output
 
@@ -232,15 +251,16 @@ def main():
     win_size = 30
 
     for objective in obj_list:
-        if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
-            alt = 'less'
-        if objective == 'Upstream_Flood_Volume_taf':
-            alt = 'greater'
-        sobol_detection(objective, alt, win_size)
-        scenario_no_detect(objective, alt, win_size)
+        for pre_whitening in [True, False]:
+            if objective in ['Rel_NOD_%', 'Rel_SOD_%']:
+                alt = 'less'
+            if objective == 'Upstream_Flood_Volume_taf':
+                alt = 'greater'
+            sobol_detection(objective, alt, win_size, pre_whitening)
+            scenario_no_detect(objective, alt, win_size, pre_whitening)
 
-    # run sobol analysis for expanding window floods
-    sobol_detection_expanding()
+    # # run sobol analysis for expanding window floods
+    # sobol_detection_expanding()
 
     return
 

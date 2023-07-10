@@ -4,6 +4,9 @@ import pandas as pd
 import scipy.stats as st
 from tqdm import tqdm
 
+# supress warnings
+import warnings
+warnings.filterwarnings('ignore')
 
 ### Plot additional figures summarizing csv results from plot_results.py
 ## Stored in /additional_materials/ folders
