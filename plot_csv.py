@@ -37,11 +37,14 @@ def last_yr_hist(objective, alt, win_size, sort_by, year):
 
 
 ## For single-scenarios: get table of stats (median, std) of first detection year distribution for each sorting type
-def single_stats(objective, alt, win_size, sort_by):
+def single_stats(objective, alt, win_size, sort_by, pre_whitening):
     # read csv of interest
-    data = pd.read_csv('significance_results/nonparametric/' + objective + '/' + str(win_size) + '_year_MA/' + alt +
-                       '_single_' + sort_by + '_win' +
-                       str(win_size) + '.csv', index_col=0)
+    if pre_whitening:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_{sort_by}_win{str(win_size)}_pw.csv'
+    else:
+        filename = f'significance_results/nonparametric/{objective}/{str(win_size)}_year_MA/{alt}_single_{sort_by}_win{str(win_size)}.csv'
+
+    data = pd.read_csv(filename, index_col=0)
     # make a list of columns (names of gcm/rcp/lulc scenario names)
     columns = list(data)
     # initialize empty list to store statistics
@@ -65,9 +68,13 @@ def single_stats(objective, alt, win_size, sort_by):
 
     df_data = {sort_by: columns, 'Median': median_list, 'Standard_deviation': stdv_list, 'Sample_size': sample_size}
     df = pd.DataFrame(df_data)
-    df.to_csv(
-        'significance_results/nonparametric/' + objective + '/additional_materials/' + alt + '_single_' + sort_by +
-        '_win' + str(win_size) + '_stats.csv')
+
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/{alt}_single_{sort_by}_win{str(win_size)}_stats_pw.csv'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/{alt}_single_{sort_by}_win{str(win_size)}_stats.csv'
+        
+    df.to_csv(save_dir)
 
     return df
 
@@ -285,7 +292,9 @@ for objective in obj_list:
         alt = 'greater'
     for sort in sortby_list:
         last_yr_hist(objective, alt, win_size, sort, year)
-        single_stats(objective, alt, win_size, sort)
+
+        for pre_whitening in [True, False]:
+            single_stats(objective, alt, win_size, sort, pre_whitening)
 
     detect_vs_obj(objective, alt, win_size)
     detect_vs_end_obj(objective, alt, win_size)
