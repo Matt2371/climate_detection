@@ -43,6 +43,7 @@ single: single scenario analysis (e.g. for each scenario, what is the first year
 win(num): size of rolling window used in analysis
 byrcp/bygcm/bylulc: indicates by which scenario types results are sorted (total/no label = all scenarios)
 _expanding: indicates expanding window analysis (instead of rolling). FLOOD OBJECTIVE ONLY
+_pw: indicates the use of the pre-whitening method to remove lag-1 autocorrelation'
 
 NOTES:
 Copy of SSJRB data: https://drive.google.com/file/d/1ZGVAbwcIbdQS1wmuHeZWKkiAEgK5GYPu/view?usp=sharing

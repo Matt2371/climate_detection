@@ -7,16 +7,24 @@ from sklearn.dummy import DummyClassifier
 from sklearn import metrics
 from tqdm import tqdm
 
+# supress warnings
+import warnings
+warnings.filterwarnings('ignore')
 
-## Use ML to detect whether or not a significant detection occurs between year t* and t*+L, where L is lead time
+## Use logistic regression to detect whether or not a significant detection occurs between year t* and t*+L, where L is lead time
 # y=1 (detection, positive class), y=0 (no detection, negative class)
 ## train on historical observations of objectives before t*, resampled by the decade
 
-# Build dataset, features and y in columns, rows contain examples (model scenarios)
-## objective: ['Rel_SOD_%', 'Upstream_Flood_Volume_taf'], alt = ['less', 'greater']
-## t_star must be a decade ending in 1, e.g. 2021, 2031, 2041...
+def build_data(objective, pre_whitening=False, t_star=2021, L=30):
+    """
+    Build dataset, features and y in columns, rows contain examples (model scenarios)
+    Parameters:
+    objective: str, ('Rel_SOD_%', 'Upstream_Flood_Volume_taf'),
+    pre_whitening: bool
+    t_star: int, present year. t_star must be a decade ending in 1, e.g. 2021, 2031, 2041...
+    L: int, lead time
+    """
 
-def build_data(objective, t_star=2020, L=30):
     if objective == 'Rel_SOD_%':
         alt = 'less'
     else:
@@ -32,11 +40,18 @@ def build_data(objective, t_star=2020, L=30):
     lulc_list = pd.read_csv('lulc_scenario_names.csv').name.to_list()
 
     # import p-vals, years of first detection
-    p_vals = pd.read_csv('significance_results/nonparametric/' + objective + '/30_year_MA/' + alt + '_pvals_win30.csv',
-                         index_col=0, parse_dates=True).drop(['count', 'rel_count'], axis=1)
-    first_detection = pd.read_csv('significance_results/nonparametric/' + objective + '/30_year_MA/' + alt +
-                                  '_single_total_win30.csv', index_col=1)
+    if pre_whitening:
+        filename_pval = f'significance_results/nonparametric/{objective}/30_year_MA/{alt}_pvals_win30_pw.csv'
+        filename_detect = f'significance_results/nonparametric/{objective}/30_year_MA/{alt}_single_total_win30_pw.csv'
+    else:
+        filename_pval = f'significance_results/nonparametric/{objective}/30_year_MA/{alt}_pvals_win30.csv'
+        filename_detect = f'significance_results/nonparametric/{objective}/30_year_MA/{alt}_single_total_win30.csv'
+
+    p_vals = pd.read_csv(filename_pval, index_col=0, parse_dates=True).drop(['count', 'rel_count'], axis=1)
+    first_detection = pd.read_csv(filename_detect, index_col=1)
     first_detection = first_detection.drop(first_detection.columns[0], axis=1)
+
+
 
     # columns of objective export df (years to grab to resample by decade to calculate features)
     years = np.arange(1961, t_star + 1, 10).tolist()
@@ -86,9 +101,12 @@ def build_data(objective, t_star=2020, L=30):
     return export_df
 
 
-# Trains logistic regression classifier.
-# X= df of features, y= array of targets
 def logistic_regrssion(X, y):
+    """
+    Trains logistic regression classifier.
+    Parameters:
+    X = pandas df of features, y= array of targets
+    """
     # randomly split up data for training and testing
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
 
@@ -101,9 +119,11 @@ def logistic_regrssion(X, y):
     return LG_predictions, y_test, LG_coeff, LG_clf, X_test
 
 
-# Calculates true positive, true negative rate
-# y_test are array of true values in test set
 def tptns(predictions, y_test):
+    """
+    Calculates true positive, true negative rate
+    y_test are array of true values in test set
+    """
     y_test = y_test.values
     TP = 0
     TN = 0
@@ -124,8 +144,10 @@ def tptns(predictions, y_test):
     return TP_rate, TN_rate
 
 
-# Calculates AUC scores
 def auc(model, X_test, y_test):
+    """
+    Calculates ROC-AUC scores
+    """
     # Get prediction probabilities
     pred_prob = model.predict_proba(X_test)[:, 1]
 
@@ -136,8 +158,10 @@ def auc(model, X_test, y_test):
     return auc
 
 
-# Plot coefficients for mean/standard deviation features for fixed t*
-def coeff_plot(objective, t_star=2031):
+def coeff_plot(objective, pre_whitening=False, t_star=2031):
+    """
+    Plot coefficients for mean/standard deviation features for fixed t*
+    """
     # years used in features
     years = np.arange(1961, t_star + 1, 10)
     # try different lead times
@@ -148,10 +172,11 @@ def coeff_plot(objective, t_star=2031):
 
     i = 0  # counter, iterate through columns (lead times)
     for L in L_array:
-        export_df = build_data(objective=objective, t_star=t_star, L=L)
+        print(f'Coeff plot. Objective: {objective}, L: {L}, t*: {t_star}')
+        export_df = build_data(objective=objective, pre_whitening=pre_whitening, t_star=t_star, L=L)
         X = export_df.drop(['y'], axis=1)
         y = export_df['y']
-        LG_coeff = logistic_regrssion(X, y)[3]
+        LG_coeff = logistic_regrssion(X, y)[2]
 
         # add model coefficients to matrices, splice array to split mean and std features
         coeff_mean[:, i] = LG_coeff[0][0:int(len(LG_coeff[0]) / 2)]
@@ -179,16 +204,23 @@ def coeff_plot(objective, t_star=2031):
     fig.supylabel('parameters', size='x-large')
 
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/' + 'LG_parameters_' +
-                str(t_star) + '.png', dpi=300)
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_parameters_{str(t_star)}_pw.png'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_parameters_{str(t_star)}.png'
+    plt.savefig(save_dir, dpi=300)
     plt.clf()
 
     return
 
 
-def heatmap(objective):
+def heatmap(objective, pre_whitening=False):
+    """
+    Train logistic regression models for combinations of t* and L
+    report performance (tp, tn, auc) as heatmaps
+    """
     # try t* and L combinations
-    t_star_array = np.array([2001, 2011, 2021, 2031, 2041, 2051])
+    t_star_array = np.array([2011, 2021, 2031, 2041, 2051, 2061])
     L_array = np.array([10, 20, 30, 40])
 
     ## initiate performance matrices
@@ -207,7 +239,8 @@ def heatmap(objective):
             t_star = t_star_array[j]
 
             # train model with current t* and L value, update performance matrices
-            export_df = build_data(objective, t_star=t_star, L=L)
+            print(f'Heatmap. Objective: {objective}, L: {L}, t*: {t_star}')
+            export_df = build_data(objective, pre_whitening=pre_whitening, t_star=t_star, L=L)
             X = export_df.drop(['y'], axis=1)
             y = export_df['y']
             LG_predictions, y_test, LG_coeff, model, X_test = logistic_regrssion(X, y)
@@ -245,7 +278,11 @@ def heatmap(objective):
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_test_size.png', dpi=300)
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_test_size_pw.png'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_test_size.png'
+    plt.savefig(save_dir, dpi=300)
     plt.clf()
 
     ## heatmap of TP rates for logistic regression
@@ -267,8 +304,11 @@ def heatmap(objective):
                            ha="center", va="center", color="w", size='large')
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_positive.png',
-                dpi=300)
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_true_positive_pw.png'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_true_positive.png'
+    plt.savefig(save_dir, dpi=300)
     plt.clf()
 
     ## heatmap of TN rates for logistic regression
@@ -291,8 +331,11 @@ def heatmap(objective):
 
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_true_negative.png',
-                dpi=300)
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_true_negative_pw.png'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_true_negative.png'
+    plt.savefig(save_dir, dpi=300)
     plt.clf()
 
     ## heatmap of AUC scores for logistic regression
@@ -314,8 +357,11 @@ def heatmap(objective):
                            ha="center", va="center", color="w", size='large')
     plt.colorbar(im)
     plt.tight_layout()
-    plt.savefig('significance_results/nonparametric/' + objective + '/additional_materials/LG_auc_scores.png',
-                dpi=300)
+    if pre_whitening:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_auc_scores_pw.png'
+    else:
+        save_dir = f'significance_results/nonparametric/{objective}/additional_materials/LG_auc_scores.png'
+    plt.savefig(save_dir, dpi=300)
     plt.clf()
 
     return
@@ -324,9 +370,10 @@ def heatmap(objective):
 def main():
     objectives = ['Rel_SOD_%', 'Upstream_Flood_Volume_taf']
     for objective in objectives:
-        heatmap(objective)
-        for t_star in [2001, 2031, 2051]:
-            coeff_plot(objective=objective, t_star=t_star)
+        for pre_whitening in [True, False]:
+            heatmap(objective, pre_whitening=pre_whitening)
+            for t_star in [2051]:
+                coeff_plot(objective=objective, pre_whitening=pre_whitening, t_star=t_star)
 
     return
 
