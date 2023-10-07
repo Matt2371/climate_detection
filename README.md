@@ -10,7 +10,7 @@ while a multiple sceanrio would track detection rates across multiple models for
 emissions scenario (RCP) choice (CMIP5 scenarios) and land use (LULC scenario) to see which of these factors are detections most sensitive to. 
 This was also explored more formally with a numeric global sensitivity analysis.
 
-Code Files:
+# Python Scripts
 significance_detection_v4.py: defined functions for multiple/single scenario analysis
 
 plot_results.py: *RUN FIRST TO GET NECCESSARY FILES* defines and executes functions to plot and export results (csv) based on significance detection functions
@@ -27,7 +27,7 @@ plot_ensemble.py: plots ensmeble of all model scenarios
 
 article_figs.py: creates figures for journal manuscript *logistic regression figures plotted seperately
 
-FOLDERS:
+# Project Directory
 archive/ duplicate or uneeded files
 data/ stores SSJRB model outputs in zip format
 empty/ stores empty csv with relevant datatimes to help build df's
@@ -36,7 +36,7 @@ cimp5_scenario_names.csv stores cimp5 names (gcm/rcp combinations)
 lulc_scenario_names.csv stores land use scenarios (lulc)
 obj_historical.csv objective values based on observed historical data
 
-GENERAL FILE NAMING CONVENTION FOR RESULTS:
+# File naming convention for results
 greater/lesser: type of one-tailed hypothesis test used
 multi: multiple scenario analysis (e.g. count significant detection across multiple models for each year)
 single: single scenario analysis (e.g. for each scenario, what is the first year of detection?)
@@ -45,6 +45,6 @@ byrcp/bygcm/bylulc: indicates by which scenario types results are sorted (total/
 _expanding: indicates expanding window analysis (instead of rolling). FLOOD OBJECTIVE ONLY
 _pw: indicates the use of the pre-whitening method to remove lag-1 autocorrelation'
 
-NOTES:
+# Misc Notes
 Copy of SSJRB data: https://drive.google.com/file/d/1ZGVAbwcIbdQS1wmuHeZWKkiAEgK5GYPu/view?usp=sharing
 Total detection "counts" are relative (rel_counts), presented as a fraction of total relevant scenarios
